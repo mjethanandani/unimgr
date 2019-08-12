@@ -1,0 +1,44 @@
+module: ietf-routing-policy
+  +--rw routing-policy
+     +--rw defined-sets
+     |  +--rw prefix-sets
+     |  |  +--rw prefix-set* [name]
+     |  |     +--rw name        string
+     |  |     +--rw mode?       enumeration
+     |  |     +--rw prefixes
+     |  |        +--rw prefix-list* [ip-prefix masklength-lower masklength-upper]
+     |  |           +--rw ip-prefix           inet:ip-prefix
+     |  |           +--rw masklength-lower    uint8
+     |  |           +--rw masklength-upper    uint8
+     |  +--rw neighbor-sets
+     |  |  +--rw neighbor-set* [name]
+     |  |     +--rw name       string
+     |  |     +--rw address*   inet:ip-address
+     |  +--rw tag-sets
+     |     +--rw tag-set* [name]
+     |        +--rw name         string
+     |        +--rw tag-value*   tag-type
+     +--rw policy-definitions
+        +--rw policy-definition* [name]
+           +--rw name          string
+           +--rw statements
+              +--rw statement* [name]
+                 +--rw name          string
+                 +--rw conditions
+                 |  +--rw call-policy?          -> /routing-policy/policy-definitions/policy-definition/name
+                 |  +--rw source-protocol?      identityref
+                 |  +--rw match-interface
+                 |  |  +--rw interface?      -> /if:interfaces/interface/name
+                 |  |  +--rw subinterface?   -> /if:interfaces/interface/if-cmn:encapsulation/if-l3-vlan:dot1q-vlan/outer-tag/vlan-id
+                 |  +--rw match-prefix-set
+                 |  |  +--rw prefix-set?          -> ../../../../../../../defined-sets/prefix-sets/prefix-set/name
+                 |  |  +--rw match-set-options?   match-set-options-type
+                 |  +--rw match-neighbor-set
+                 |  |  +--rw neighbor-set?   -> ../../../../../../../defined-sets/neighbor-sets/neighbor-set/name
+                 |  +--rw match-tag-set
+                 |     +--rw tag-set?             -> ../../../../../../../defined-sets/tag-sets/tag-set/name
+                 |     +--rw match-set-options?   match-set-options-type
+                 +--rw actions
+                    +--rw policy-result?    policy-result-type
+                    +--rw set-metric?       uint32
+                    +--rw set-preference?   uint16

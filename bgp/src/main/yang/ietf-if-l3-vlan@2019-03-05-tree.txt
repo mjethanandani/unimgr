@@ -1,0 +1,11 @@
+
+module: ietf-if-l3-vlan
+  augment /if:interfaces/if:interface/if-cmn:encapsulation/if-cmn:encaps-type:
+    +--:(dot1q-vlan)
+       +--rw dot1q-vlan
+          +--rw outer-tag
+          |  +--rw tag-type    dot1q-tag-type
+          |  +--rw vlan-id     vlanid
+          +--rw second-tag!
+             +--rw tag-type    dot1q-tag-type
+             +--rw vlan-id     vlanid

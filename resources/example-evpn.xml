@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <evpn xmlns="urn:ietf:params:xml:ns:yang:ietf-evpn">
+    <evpn-instances>
+      <evpn-instance>
+	<name>my name</name>
+	<evi>100</evi>
+      </evpn-instance>
+    </evpn-instances>
+  </evpn>

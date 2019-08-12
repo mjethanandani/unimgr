@@ -65,6 +65,7 @@ and is available at http://www.eclipse.org/legal/epl-v10.html INTERNAL
         <module>karaf</module>
         <module>features</module>
         <module>artifacts</module>
+	<module>evpn</module>
       </modules>
       <activation><activeByDefault>true</activeByDefault></activation>
     </profile>

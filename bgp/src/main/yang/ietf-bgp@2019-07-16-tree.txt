@@ -1,0 +1,741 @@
+
+module: ietf-bgp
+  augment /rt:routing/rt:control-plane-protocols/rt:control-plane-protocol:
+    +--rw bgp
+       +--rw global!
+       |  +--rw as                         inet:as-number
+       |  +--rw identifier?                yang:dotted-quad
+       |  +--rw default-route-distance
+       |  |  +--rw external-route-distance?   uint8
+       |  |  +--rw internal-route-distance?   uint8
+       |  +--rw confederation
+       |  |  +--rw enabled?      boolean
+       |  |  +--rw identifier?   inet:as-number
+       |  |  +--rw member-as*    inet:as-number
+       |  +--rw graceful-restart
+       |  |  +--rw enabled?             boolean
+       |  |  +--rw restart-time?        uint16
+       |  |  +--rw stale-routes-time?   uint32
+       |  |  +--rw helper-only?         boolean
+       |  +--rw use-multiple-paths
+       |  |  +--rw enabled?   boolean
+       |  |  +--rw ebgp
+       |  |  |  +--rw allow-multiple-as?   boolean
+       |  |  |  +--rw maximum-paths?       uint32
+       |  |  +--rw ibgp
+       |  |     +--rw maximum-paths?   uint32
+       |  +--rw route-selection-options
+       |  |  +--rw enable-aigp?   boolean
+       |  +--rw afi-safis
+       |  |  +--rw afi-safi* [afi-safi-name]
+       |  |     +--rw afi-safi-name              identityref
+       |  |     +--rw enabled?                   boolean
+       |  |     +--ro total-paths?               uint32
+       |  |     +--ro total-prefixes?            uint32
+       |  |     +--rw graceful-restart
+       |  |     |  +--rw enabled?   boolean
+       |  |     +--rw route-selection-options
+       |  |     |  +--rw enable-aigp?   boolean
+       |  |     +--rw use-multiple-paths
+       |  |     |  +--rw enabled?   boolean
+       |  |     |  +--rw ebgp
+       |  |     |  |  +--rw allow-multiple-as?   boolean
+       |  |     |  |  +--rw maximum-paths?       uint32
+       |  |     |  +--rw ibgp
+       |  |     |     +--rw maximum-paths?   uint32
+       |  |     +--rw apply-policy
+       |  |     |  +--rw import-policy*           -> /rt-pol:routing-policy/policy-definitions/policy-definition/name
+       |  |     |  +--rw default-import-policy?   default-policy-type
+       |  |     |  +--rw export-policy*           -> /rt-pol:routing-policy/policy-definitions/policy-definition/name
+       |  |     |  +--rw default-export-policy?   default-policy-type
+       |  |     |  +--rw apply-policy-state
+       |  |     +--rw ipv4-unicast
+       |  |     |  +--rw prefix-limit
+       |  |     |  |  +--rw max-prefixes?             uint32
+       |  |     |  |  +--rw shutdown-threshold-pct?   bt:percentage
+       |  |     |  |  +--rw restart-timer?            decimal64
+       |  |     |  +--rw send-default-route?   boolean
+       |  |     +--rw ipv6-unicast
+       |  |     |  +--rw prefix-limit
+       |  |     |  |  +--rw max-prefixes?             uint32
+       |  |     |  |  +--rw shutdown-threshold-pct?   bt:percentage
+       |  |     |  |  +--rw restart-timer?            decimal64
+       |  |     |  +--rw send-default-route?   boolean
+       |  |     +--rw ipv4-labeled-unicast
+       |  |     |  +--rw prefix-limit
+       |  |     |     +--rw max-prefixes?             uint32
+       |  |     |     +--rw shutdown-threshold-pct?   bt:percentage
+       |  |     |     +--rw restart-timer?            decimal64
+       |  |     +--rw ipv6-labeled-unicast
+       |  |     |  +--rw prefix-limit
+       |  |     |     +--rw max-prefixes?             uint32
+       |  |     |     +--rw shutdown-threshold-pct?   bt:percentage
+       |  |     |     +--rw restart-timer?            decimal64
+       |  |     +--rw l3vpn-ipv4-unicast
+       |  |     |  +--rw prefix-limit
+       |  |     |     +--rw max-prefixes?             uint32
+       |  |     |     +--rw shutdown-threshold-pct?   bt:percentage
+       |  |     |     +--rw restart-timer?            decimal64
+       |  |     +--rw l3vpn-ipv6-unicast
+       |  |     |  +--rw prefix-limit
+       |  |     |     +--rw max-prefixes?             uint32
+       |  |     |     +--rw shutdown-threshold-pct?   bt:percentage
+       |  |     |     +--rw restart-timer?            decimal64
+       |  |     +--rw l3vpn-ipv4-multicast
+       |  |     |  +--rw prefix-limit
+       |  |     |     +--rw max-prefixes?             uint32
+       |  |     |     +--rw shutdown-threshold-pct?   bt:percentage
+       |  |     |     +--rw restart-timer?            decimal64
+       |  |     +--rw l3vpn-ipv6-multicast
+       |  |     |  +--rw prefix-limit
+       |  |     |     +--rw max-prefixes?             uint32
+       |  |     |     +--rw shutdown-threshold-pct?   bt:percentage
+       |  |     |     +--rw restart-timer?            decimal64
+       |  |     +--rw l2vpn-vpls
+       |  |     |  +--rw prefix-limit
+       |  |     |     +--rw max-prefixes?             uint32
+       |  |     |     +--rw shutdown-threshold-pct?   bt:percentage
+       |  |     |     +--rw restart-timer?            decimal64
+       |  |     +--rw l2vpn-evpn
+       |  |        +--rw prefix-limit
+       |  |           +--rw max-prefixes?             uint32
+       |  |           +--rw shutdown-threshold-pct?   bt:percentage
+       |  |           +--rw restart-timer?            decimal64
+       |  +--rw apply-policy
+       |  |  +--rw import-policy*           -> /rt-pol:routing-policy/policy-definitions/policy-definition/name
+       |  |  +--rw default-import-policy?   default-policy-type
+       |  |  +--rw export-policy*           -> /rt-pol:routing-policy/policy-definitions/policy-definition/name
+       |  |  +--rw default-export-policy?   default-policy-type
+       |  |  +--rw apply-policy-state
+       |  +--ro total-paths?               uint32
+       |  +--ro total-prefixes?            uint32
+       +--rw neighbors
+       |  +--rw neighbor* [remote-address]
+       |  |  +--ro local-address?               inet:ip-address
+       |  |  +--ro local-port?                  inet:port-number
+       |  |  +--rw peer-group?                  -> ../../../peer-groups/peer-group/peer-group-name
+       |  |  +--ro identifier?                  yang:dotted-quad
+       |  |  +--rw remote-address               inet:ip-address
+       |  |  +--ro remote-port?                 inet:port-number
+       |  |  +--ro remote-as?                   inet:as-number
+       |  |  +--rw enabled?                     boolean
+       |  |  +--rw peer-as?                     inet:as-number
+       |  |  +--rw local-as?                    inet:as-number
+       |  |  +--rw peer-type?                   bt:peer-type
+       |  |  +--rw auth-password?               string
+       |  |  +--rw remove-private-as?           bt:remove-private-as-option
+       |  |  +--rw description?                 string
+       |  |  +--rw session-state?               enumeration
+       |  |  +--ro last-established?            uint64
+       |  |  +--ro supported-capabilities*      identityref
+       |  |  +--ro negotiated-hold-time?        decimal64
+       |  |  +--rw last-error?                  binary
+       |  |  +--ro fsm-established-time?        yang:gauge32
+       |  |  +--rw timers
+       |  |  |  +--rw connect-retry-interval?             uint32
+       |  |  |  +--rw hold-time?                          uint32
+       |  |  |  +--rw keepalive-interval?                 uint32
+       |  |  |  +--rw hold-time-configured?               uint32
+       |  |  |  +--rw keep-alive-configured?              uint32
+       |  |  |  +--rw min-as-origination-interval?        uint32
+       |  |  |  +--rw min-route-advertisement-interval?   uint32
+       |  |  +--rw transport
+       |  |  |  +--rw tcp-mss?         uint16
+       |  |  |  +--rw mtu-discovery?   boolean
+       |  |  |  +--rw passive-mode?    boolean
+       |  |  |  +--rw local-address?   union
+       |  |  +--ro erroneous-update-messages?   uint32
+       |  |  +--rw graceful-restart
+       |  |  |  +--rw enabled?             boolean
+       |  |  |  +--rw restart-time?        uint16
+       |  |  |  +--rw stale-routes-time?   uint32
+       |  |  |  +--rw helper-only?         boolean
+       |  |  |  +--ro peer-restart-time?   uint16
+       |  |  |  +--ro peer-restarting?     boolean
+       |  |  |  +--ro local-restarting?    boolean
+       |  |  |  +--ro mode?                enumeration
+       |  |  +--rw ebgp-multihop
+       |  |  |  +--rw enabled?        boolean
+       |  |  |  +--rw multihop-ttl?   uint8
+       |  |  +--rw route-reflector
+       |  |  |  +--rw route-reflector-cluster-id?   bt:rr-cluster-id-type
+       |  |  |  +--rw route-reflector-client?       boolean
+       |  |  +--rw as-path-options
+       |  |  |  +--rw allow-own-as?      uint8
+       |  |  |  +--rw replace-peer-as?   boolean
+       |  |  +--rw add-paths
+       |  |  |  +--rw receive?                  boolean
+       |  |  |  +--rw send-max?                 uint8
+       |  |  |  +--rw eligible-prefix-policy?   -> /rpol:routing-policy/policy-definitions/policy-definition/name
+       |  |  +--rw use-multiple-paths
+       |  |  |  +--rw enabled?   boolean
+       |  |  |  +--rw ebgp
+       |  |  |     +--rw allow-multiple-as?   boolean
+       |  |  +--rw apply-policy
+       |  |  |  +--rw import-policy*           -> /rt-pol:routing-policy/policy-definitions/policy-definition/name
+       |  |  |  +--rw default-import-policy?   default-policy-type
+       |  |  |  +--rw export-policy*           -> /rt-pol:routing-policy/policy-definitions/policy-definition/name
+       |  |  |  +--rw default-export-policy?   default-policy-type
+       |  |  |  +--rw apply-policy-state
+       |  |  +--rw afi-safis
+       |  |  |  +--rw afi-safi* [afi-safi-name]
+       |  |  |     +--rw afi-safi-name           identityref
+       |  |  |     +--rw enabled?                boolean
+       |  |  |     +--ro active?                 boolean
+       |  |  |     +--ro prefixes
+       |  |  |     |  +--ro received?    uint32
+       |  |  |     |  +--ro sent?        uint32
+       |  |  |     |  +--ro installed?   uint32
+       |  |  |     +--rw graceful-restart
+       |  |  |     |  +--rw enabled?      boolean
+       |  |  |     |  +--ro received?     boolean
+       |  |  |     |  +--ro advertised?   boolean
+       |  |  |     +--rw apply-policy
+       |  |  |     |  +--rw import-policy*           -> /rt-pol:routing-policy/policy-definitions/policy-definition/name
+       |  |  |     |  +--rw default-import-policy?   default-policy-type
+       |  |  |     |  +--rw export-policy*           -> /rt-pol:routing-policy/policy-definitions/policy-definition/name
+       |  |  |     |  +--rw default-export-policy?   default-policy-type
+       |  |  |     |  +--rw apply-policy-state
+       |  |  |     +--rw ipv4-unicast
+       |  |  |     |  +--rw prefix-limit
+       |  |  |     |  |  +--rw max-prefixes?             uint32
+       |  |  |     |  |  +--rw shutdown-threshold-pct?   bt:percentage
+       |  |  |     |  |  +--rw restart-timer?            decimal64
+       |  |  |     |  +--rw send-default-route?   boolean
+       |  |  |     +--rw ipv6-unicast
+       |  |  |     |  +--rw prefix-limit
+       |  |  |     |  |  +--rw max-prefixes?             uint32
+       |  |  |     |  |  +--rw shutdown-threshold-pct?   bt:percentage
+       |  |  |     |  |  +--rw restart-timer?            decimal64
+       |  |  |     |  +--rw send-default-route?   boolean
+       |  |  |     +--rw ipv4-labeled-unicast
+       |  |  |     |  +--rw prefix-limit
+       |  |  |     |     +--rw max-prefixes?             uint32
+       |  |  |     |     +--rw shutdown-threshold-pct?   bt:percentage
+       |  |  |     |     +--rw restart-timer?            decimal64
+       |  |  |     +--rw ipv6-labeled-unicast
+       |  |  |     |  +--rw prefix-limit
+       |  |  |     |     +--rw max-prefixes?             uint32
+       |  |  |     |     +--rw shutdown-threshold-pct?   bt:percentage
+       |  |  |     |     +--rw restart-timer?            decimal64
+       |  |  |     +--rw l3vpn-ipv4-unicast
+       |  |  |     |  +--rw prefix-limit
+       |  |  |     |     +--rw max-prefixes?             uint32
+       |  |  |     |     +--rw shutdown-threshold-pct?   bt:percentage
+       |  |  |     |     +--rw restart-timer?            decimal64
+       |  |  |     +--rw l3vpn-ipv6-unicast
+       |  |  |     |  +--rw prefix-limit
+       |  |  |     |     +--rw max-prefixes?             uint32
+       |  |  |     |     +--rw shutdown-threshold-pct?   bt:percentage
+       |  |  |     |     +--rw restart-timer?            decimal64
+       |  |  |     +--rw l3vpn-ipv4-multicast
+       |  |  |     |  +--rw prefix-limit
+       |  |  |     |     +--rw max-prefixes?             uint32
+       |  |  |     |     +--rw shutdown-threshold-pct?   bt:percentage
+       |  |  |     |     +--rw restart-timer?            decimal64
+       |  |  |     +--rw l3vpn-ipv6-multicast
+       |  |  |     |  +--rw prefix-limit
+       |  |  |     |     +--rw max-prefixes?             uint32
+       |  |  |     |     +--rw shutdown-threshold-pct?   bt:percentage
+       |  |  |     |     +--rw restart-timer?            decimal64
+       |  |  |     +--rw l2vpn-vpls
+       |  |  |     |  +--rw prefix-limit
+       |  |  |     |     +--rw max-prefixes?             uint32
+       |  |  |     |     +--rw shutdown-threshold-pct?   bt:percentage
+       |  |  |     |     +--rw restart-timer?            decimal64
+       |  |  |     +--rw l2vpn-evpn
+       |  |  |     |  +--rw prefix-limit
+       |  |  |     |     +--rw max-prefixes?             uint32
+       |  |  |     |     +--rw shutdown-threshold-pct?   bt:percentage
+       |  |  |     |     +--rw restart-timer?            decimal64
+       |  |  |     +--rw use-multiple-paths
+       |  |  |        +--rw enabled?   boolean
+       |  |  |        +--rw ebgp
+       |  |  |           +--rw allow-multiple-as?   boolean
+       |  |  +--rw statistics
+       |  |     +--ro established-transitions?       yang:counter64
+       |  |     +--ro fsm-established-transitions?   yang:counter32
+       |  |     +--ro messages
+       |  |     |  +--ro in-total-messages?        yang:counter32
+       |  |     |  +--ro out-total-messages?       yang:counter32
+       |  |     |  +--ro in-update-elapsed-time?   yang:gauge32
+       |  |     |  +--ro sent
+       |  |     |  |  +--ro updates-received?    uint64
+       |  |     |  |  +--ro updates-sent?        uint64
+       |  |     |  |  +--ro messages-received?   uint64
+       |  |     |  |  +--ro messages-sent?       uint64
+       |  |     |  |  +--ro notification?        uint64
+       |  |     |  +--ro received
+       |  |     |     +--ro updates-received?    uint64
+       |  |     |     +--ro updates-sent?        uint64
+       |  |     |     +--ro messages-received?   uint64
+       |  |     |     +--ro messages-sent?       uint64
+       |  |     |     +--ro notification?        uint64
+       |  |     +--ro queues
+       |  |     |  +--ro input?    uint32
+       |  |     |  +--ro output?   uint32
+       |  |     +--rw clear-statistics {clear-statistics}?
+       |  |        +---x clear
+       |  |           +---w input
+       |  |           |  +---w clear-at?   yang:date-and-time
+       |  |           +--ro output
+       |  |              +--ro clear-finished-at?   yang:date-and-time
+       |  +---n established
+       |  |  +-- remote-address?   -> ../../neighbor/remote-address
+       |  |  +-- last-error?       -> ../../neighbor/last-error
+       |  |  +-- session-state?    -> ../../neighbor/session-state
+       |  +---n backward-transition
+       |  |  +-- remote-addr?     -> ../../neighbor/remote-address
+       |  |  +-- last-error?      -> ../../neighbor/last-error
+       |  |  +-- session-state?   -> ../../neighbor/session-state
+       |  +--rw clear-neighbors {clear-neighbors}?
+       |     +---x clear
+       |        +---w input
+       |        |  +---w clear-at?   yang:date-and-time
+       |        +--ro output
+       |           +--ro clear-finished-at?   yang:date-and-time
+       +--rw peer-groups
+       |  +--rw peer-group* [peer-group-name]
+       |     +--rw peer-group-name       string
+       |     +--rw peer-as?              inet:as-number
+       |     +--rw local-as?             inet:as-number
+       |     +--rw peer-type?            bt:peer-type
+       |     +--rw auth-password?        string
+       |     +--rw remove-private-as?    bt:remove-private-as-option
+       |     +--rw description?          string
+       |     +--ro total-paths?          uint32
+       |     +--ro total-prefixes?       uint32
+       |     +--rw timers
+       |     |  +--rw connect-retry-interval?             uint32
+       |     |  +--rw hold-time?                          uint32
+       |     |  +--rw keepalive-interval?                 uint32
+       |     |  +--rw hold-time-configured?               uint32
+       |     |  +--rw keep-alive-configured?              uint32
+       |     |  +--rw min-as-origination-interval?        uint32
+       |     |  +--rw min-route-advertisement-interval?   uint32
+       |     +--rw transport
+       |     |  +--rw tcp-mss?         uint16
+       |     |  +--rw mtu-discovery?   boolean
+       |     |  +--rw passive-mode?    boolean
+       |     |  +--rw local-address?   union
+       |     +--rw graceful-restart
+       |     |  +--rw enabled?             boolean
+       |     |  +--rw restart-time?        uint16
+       |     |  +--rw stale-routes-time?   uint32
+       |     |  +--rw helper-only?         boolean
+       |     +--rw ebgp-multihop
+       |     |  +--rw enabled?        boolean
+       |     |  +--rw multihop-ttl?   uint8
+       |     +--rw route-reflector
+       |     |  +--rw route-reflector-cluster-id?   bt:rr-cluster-id-type
+       |     |  +--rw route-reflector-client?       boolean
+       |     +--rw as-path-options
+       |     |  +--rw allow-own-as?      uint8
+       |     |  +--rw replace-peer-as?   boolean
+       |     +--rw add-paths
+       |     |  +--rw receive?                  boolean
+       |     |  +--rw send-max?                 uint8
+       |     |  +--rw eligible-prefix-policy?   -> /rpol:routing-policy/policy-definitions/policy-definition/name
+       |     +--rw use-multiple-paths
+       |     |  +--rw enabled?   boolean
+       |     |  +--rw ebgp
+       |     |  |  +--rw allow-multiple-as?   boolean
+       |     |  |  +--rw maximum-paths?       uint32
+       |     |  +--rw ibgp
+       |     |     +--rw maximum-paths?   uint32
+       |     +--rw apply-policy
+       |     |  +--rw import-policy*           -> /rt-pol:routing-policy/policy-definitions/policy-definition/name
+       |     |  +--rw default-import-policy?   default-policy-type
+       |     |  +--rw export-policy*           -> /rt-pol:routing-policy/policy-definitions/policy-definition/name
+       |     |  +--rw default-export-policy?   default-policy-type
+       |     |  +--rw apply-policy-state
+       |     +--rw afi-safis
+       |        +--rw afi-safi* [afi-safi-name]
+       |           +--rw afi-safi-name              identityref
+       |           +--rw enabled?                   boolean
+       |           +--rw graceful-restart
+       |           |  +--rw enabled?   boolean
+       |           +--rw route-selection-options
+       |           |  +--rw enable-aigp?   boolean
+       |           +--rw use-multiple-paths
+       |           |  +--rw enabled?   boolean
+       |           |  +--rw ebgp
+       |           |  |  +--rw allow-multiple-as?   boolean
+       |           |  |  +--rw maximum-paths?       uint32
+       |           |  +--rw ibgp
+       |           |     +--rw maximum-paths?   uint32
+       |           +--rw apply-policy
+       |           |  +--rw import-policy*           -> /rt-pol:routing-policy/policy-definitions/policy-definition/name
+       |           |  +--rw default-import-policy?   default-policy-type
+       |           |  +--rw export-policy*           -> /rt-pol:routing-policy/policy-definitions/policy-definition/name
+       |           |  +--rw default-export-policy?   default-policy-type
+       |           |  +--rw apply-policy-state
+       |           +--rw ipv4-unicast
+       |           |  +--rw prefix-limit
+       |           |  |  +--rw max-prefixes?             uint32
+       |           |  |  +--rw shutdown-threshold-pct?   bt:percentage
+       |           |  |  +--rw restart-timer?            decimal64
+       |           |  +--rw send-default-route?   boolean
+       |           +--rw ipv6-unicast
+       |           |  +--rw prefix-limit
+       |           |  |  +--rw max-prefixes?             uint32
+       |           |  |  +--rw shutdown-threshold-pct?   bt:percentage
+       |           |  |  +--rw restart-timer?            decimal64
+       |           |  +--rw send-default-route?   boolean
+       |           +--rw ipv4-labeled-unicast
+       |           |  +--rw prefix-limit
+       |           |     +--rw max-prefixes?             uint32
+       |           |     +--rw shutdown-threshold-pct?   bt:percentage
+       |           |     +--rw restart-timer?            decimal64
+       |           +--rw ipv6-labeled-unicast
+       |           |  +--rw prefix-limit
+       |           |     +--rw max-prefixes?             uint32
+       |           |     +--rw shutdown-threshold-pct?   bt:percentage
+       |           |     +--rw restart-timer?            decimal64
+       |           +--rw l3vpn-ipv4-unicast
+       |           |  +--rw prefix-limit
+       |           |     +--rw max-prefixes?             uint32
+       |           |     +--rw shutdown-threshold-pct?   bt:percentage
+       |           |     +--rw restart-timer?            decimal64
+       |           +--rw l3vpn-ipv6-unicast
+       |           |  +--rw prefix-limit
+       |           |     +--rw max-prefixes?             uint32
+       |           |     +--rw shutdown-threshold-pct?   bt:percentage
+       |           |     +--rw restart-timer?            decimal64
+       |           +--rw l3vpn-ipv4-multicast
+       |           |  +--rw prefix-limit
+       |           |     +--rw max-prefixes?             uint32
+       |           |     +--rw shutdown-threshold-pct?   bt:percentage
+       |           |     +--rw restart-timer?            decimal64
+       |           +--rw l3vpn-ipv6-multicast
+       |           |  +--rw prefix-limit
+       |           |     +--rw max-prefixes?             uint32
+       |           |     +--rw shutdown-threshold-pct?   bt:percentage
+       |           |     +--rw restart-timer?            decimal64
+       |           +--rw l2vpn-vpls
+       |           |  +--rw prefix-limit
+       |           |     +--rw max-prefixes?             uint32
+       |           |     +--rw shutdown-threshold-pct?   bt:percentage
+       |           |     +--rw restart-timer?            decimal64
+       |           +--rw l2vpn-evpn
+       |              +--rw prefix-limit
+       |                 +--rw max-prefixes?             uint32
+       |                 +--rw shutdown-threshold-pct?   bt:percentage
+       |                 +--rw restart-timer?            decimal64
+       +--rw interfaces
+       |  +--rw interface* [name]
+       |     +--rw name    if:interface-ref
+       |     +--rw bfd {bt:bfd}?
+       |        +--rw enable?                           boolean
+       |        +--rw local-multiplier?                 multiplier
+       |        +--rw (interval-config-type)?
+       |           +--:(tx-rx-intervals)
+       |           |  +--rw desired-min-tx-interval?    uint32
+       |           |  +--rw required-min-rx-interval?   uint32
+       |           +--:(single-interval) {single-minimum-interval}?
+       |              +--rw min-interval?               uint32
+       +--ro rib
+          +--ro attr-sets
+          |  +--ro attr-set* [index]
+          |     +--ro index               uint64
+          |     +--ro origin?             bt:bgp-origin-attr-type
+          |     +--ro atomic-aggregate?   boolean
+          |     +--ro next-hop?           inet:ip-address
+          |     +--ro med?                uint32
+          |     +--ro local-pref?         uint32
+          |     +--ro originator-id?      yang:dotted-quad
+          |     +--ro cluster-list*       yang:dotted-quad
+          |     +--ro aigp-metric?        uint64
+          |     +--ro aggregator
+          |     |  +--ro as?        inet:as-number
+          |     |  +--ro as4?       inet:as-number
+          |     |  +--ro address?   inet:ipv4-address
+          |     +--ro as-path
+          |     |  +--ro segment* [type]
+          |     |     +--ro type      identityref
+          |     |     +--ro member*   inet:as-number
+          |     +--ro as4-path
+          |        +--ro segment* [type]
+          |           +--ro type      identityref
+          |           +--ro member*   inet:as-number
+          +--ro communities
+          |  +--ro community* [index]
+          |     +--ro index        uint64
+          |     +--ro community*   union
+          +--ro ext-communities
+          |  +--ro ext-community* [index]
+          |     +--ro index            uint64
+          |     +--ro ext-community*   rt:route-target
+          +--ro afi-safis
+             +--ro afi-safi* [afi-safi-name]
+                +--ro afi-safi-name    identityref
+                +--ro ipv4-unicast
+                |  +--ro loc-rib
+                |  |  +--ro routes
+                |  |     +--ro route* [prefix origin path-id]
+                |  |     |  +--ro prefix                 inet:ipv4-prefix
+                |  |     |  +--ro origin                 union
+                |  |     |  +--ro path-id                uint32
+                |  |     |  +--ro attr-index?            -> ../../../../../../../attr-sets/attr-set/index
+                |  |     |  +--ro community-index?       -> ../../../../../../../communities/community/index
+                |  |     |  +--ro ext-community-index?   -> ../../../../../../../ext-communities/ext-community/index
+                |  |     |  +--ro last-modified?         types:timeticks
+                |  |     |  +--ro valid-route?           boolean
+                |  |     |  +--ro invalid-reason?        identityref
+                |  |     |  +--ro unknown-attributes
+                |  |     |  |  +--ro unknown-attribute* [attr-type]
+                |  |     |  |     +--ro optional?     boolean
+                |  |     |  |     +--ro transitive?   boolean
+                |  |     |  |     +--ro partial?      boolean
+                |  |     |  |     +--ro extended?     boolean
+                |  |     |  |     +--ro attr-type     uint8
+                |  |     |  |     +--ro attr-len?     uint16
+                |  |     |  |     +--ro attr-value?   binary
+                |  |     |  +--ro reject-reason?         union
+                |  |     +--ro clear-routes {clear-routes}?
+                |  |        +---x clear
+                |  |           +---w input
+                |  |           |  +---w clear-at?   yang:date-and-time
+                |  |           +--ro output
+                |  |              +--ro clear-finished-at?   yang:date-and-time
+                |  +--ro neighbors
+                |     +--ro neighbor* [neighbor-address]
+                |        +--ro neighbor-address    inet:ip-address
+                |        +--ro adj-rib-in-pre
+                |        |  +--ro routes
+                |        |     +--ro route* [prefix path-id]
+                |        |     |  +--ro prefix                 inet:ipv4-prefix
+                |        |     |  +--ro path-id                uint32
+                |        |     |  +--ro attr-index?            -> ../../../../../../../../../attr-sets/attr-set/index
+                |        |     |  +--ro community-index?       -> ../../../../../../../../../communities/community/index
+                |        |     |  +--ro ext-community-index?   -> ../../../../../../../../../ext-communities/ext-community/index
+                |        |     |  +--ro last-modified?         types:timeticks
+                |        |     |  +--ro valid-route?           boolean
+                |        |     |  +--ro invalid-reason?        identityref
+                |        |     |  +--ro unknown-attributes
+                |        |     |  |  +--ro unknown-attribute* [attr-type]
+                |        |     |  |     +--ro optional?     boolean
+                |        |     |  |     +--ro transitive?   boolean
+                |        |     |  |     +--ro partial?      boolean
+                |        |     |  |     +--ro extended?     boolean
+                |        |     |  |     +--ro attr-type     uint8
+                |        |     |  |     +--ro attr-len?     uint16
+                |        |     |  |     +--ro attr-value?   binary
+                |        |     |  +--ro reject-reason?         union
+                |        |     +--ro clear-routes {clear-routes}?
+                |        |        +---x clear
+                |        |           +---w input
+                |        |           |  +---w clear-at?   yang:date-and-time
+                |        |           +--ro output
+                |        |              +--ro clear-finished-at?   yang:date-and-time
+                |        +--ro adj-rib-in-post
+                |        |  +--ro routes
+                |        |     +--ro route* [prefix path-id]
+                |        |        +--ro prefix                 inet:ipv4-prefix
+                |        |        +--ro path-id                uint32
+                |        |        +--ro attr-index?            -> ../../../../../../../../../attr-sets/attr-set/index
+                |        |        +--ro community-index?       -> ../../../../../../../../../communities/community/index
+                |        |        +--ro ext-community-index?   -> ../../../../../../../../../ext-communities/ext-community/index
+                |        |        +--ro last-modified?         types:timeticks
+                |        |        +--ro valid-route?           boolean
+                |        |        +--ro invalid-reason?        identityref
+                |        |        +--ro best-path?             boolean
+                |        |        +--ro unknown-attributes
+                |        |        |  +--ro unknown-attribute* [attr-type]
+                |        |        |     +--ro optional?     boolean
+                |        |        |     +--ro transitive?   boolean
+                |        |        |     +--ro partial?      boolean
+                |        |        |     +--ro extended?     boolean
+                |        |        |     +--ro attr-type     uint8
+                |        |        |     +--ro attr-len?     uint16
+                |        |        |     +--ro attr-value?   binary
+                |        |        +--ro reject-reason?         union
+                |        +--ro adj-rib-out-pre
+                |        |  +--ro routes
+                |        |     +--ro route* [prefix path-id]
+                |        |     |  +--ro prefix                 inet:ipv4-prefix
+                |        |     |  +--ro path-id                uint32
+                |        |     |  +--ro attr-index?            -> ../../../../../../../../../attr-sets/attr-set/index
+                |        |     |  +--ro community-index?       -> ../../../../../../../../../communities/community/index
+                |        |     |  +--ro ext-community-index?   -> ../../../../../../../../../ext-communities/ext-community/index
+                |        |     |  +--ro last-modified?         types:timeticks
+                |        |     |  +--ro valid-route?           boolean
+                |        |     |  +--ro invalid-reason?        identityref
+                |        |     |  +--ro unknown-attributes
+                |        |     |  |  +--ro unknown-attribute* [attr-type]
+                |        |     |  |     +--ro optional?     boolean
+                |        |     |  |     +--ro transitive?   boolean
+                |        |     |  |     +--ro partial?      boolean
+                |        |     |  |     +--ro extended?     boolean
+                |        |     |  |     +--ro attr-type     uint8
+                |        |     |  |     +--ro attr-len?     uint16
+                |        |     |  |     +--ro attr-value?   binary
+                |        |     |  +--ro reject-reason?         union
+                |        |     +--ro clear-routes {clear-routes}?
+                |        |        +---x clear
+                |        |           +---w input
+                |        |           |  +---w clear-at?   yang:date-and-time
+                |        |           +--ro output
+                |        |              +--ro clear-finished-at?   yang:date-and-time
+                |        +--ro adj-rib-out-post
+                |           +--ro routes
+                |              +--ro route* [prefix path-id]
+                |              |  +--ro prefix                 inet:ipv4-prefix
+                |              |  +--ro path-id                uint32
+                |              |  +--ro attr-index?            -> ../../../../../../../../../attr-sets/attr-set/index
+                |              |  +--ro community-index?       -> ../../../../../../../../../communities/community/index
+                |              |  +--ro ext-community-index?   -> ../../../../../../../../../ext-communities/ext-community/index
+                |              |  +--ro last-modified?         types:timeticks
+                |              |  +--ro valid-route?           boolean
+                |              |  +--ro invalid-reason?        identityref
+                |              |  +--ro unknown-attributes
+                |              |  |  +--ro unknown-attribute* [attr-type]
+                |              |  |     +--ro optional?     boolean
+                |              |  |     +--ro transitive?   boolean
+                |              |  |     +--ro partial?      boolean
+                |              |  |     +--ro extended?     boolean
+                |              |  |     +--ro attr-type     uint8
+                |              |  |     +--ro attr-len?     uint16
+                |              |  |     +--ro attr-value?   binary
+                |              |  +--ro reject-reason?         union
+                |              +--ro clear-routes {clear-routes}?
+                |                 +---x clear
+                |                    +---w input
+                |                    |  +---w clear-at?   yang:date-and-time
+                |                    +--ro output
+                |                       +--ro clear-finished-at?   yang:date-and-time
+                +--ro ipv6-unicast
+                   +--ro loc-rib
+                   |  +--ro routes
+                   |     +--ro route* [prefix origin path-id]
+                   |     |  +--ro prefix                 inet:ipv6-prefix
+                   |     |  +--ro origin                 union
+                   |     |  +--ro path-id                uint32
+                   |     |  +--ro attr-index?            -> ../../../../../../../attr-sets/attr-set/index
+                   |     |  +--ro community-index?       -> ../../../../../../../communities/community/index
+                   |     |  +--ro ext-community-index?   -> ../../../../../../../ext-communities/ext-community/index
+                   |     |  +--ro last-modified?         types:timeticks
+                   |     |  +--ro valid-route?           boolean
+                   |     |  +--ro invalid-reason?        identityref
+                   |     |  +--ro unknown-attributes
+                   |     |  |  +--ro unknown-attribute* [attr-type]
+                   |     |  |     +--ro optional?     boolean
+                   |     |  |     +--ro transitive?   boolean
+                   |     |  |     +--ro partial?      boolean
+                   |     |  |     +--ro extended?     boolean
+                   |     |  |     +--ro attr-type     uint8
+                   |     |  |     +--ro attr-len?     uint16
+                   |     |  |     +--ro attr-value?   binary
+                   |     |  +--ro reject-reason?         union
+                   |     +--ro clear-routes {clear-routes}?
+                   |        +---x clear
+                   |           +---w input
+                   |           |  +---w clear-at?   yang:date-and-time
+                   |           +--ro output
+                   |              +--ro clear-finished-at?   yang:date-and-time
+                   +--ro neighbors
+                      +--ro neighbor* [neighbor-address]
+                         +--ro neighbor-address    inet:ip-address
+                         +--ro adj-rib-in-pre
+                         |  +--ro routes
+                         |     +--ro route* [prefix path-id]
+                         |     |  +--ro prefix                 inet:ipv6-prefix
+                         |     |  +--ro path-id                uint32
+                         |     |  +--ro attr-index?            -> ../../../../../../../../../attr-sets/attr-set/index
+                         |     |  +--ro community-index?       -> ../../../../../../../../../communities/community/index
+                         |     |  +--ro ext-community-index?   -> ../../../../../../../../../ext-communities/ext-community/index
+                         |     |  +--ro last-modified?         types:timeticks
+                         |     |  +--ro valid-route?           boolean
+                         |     |  +--ro invalid-reason?        identityref
+                         |     |  +--ro unknown-attributes
+                         |     |  |  +--ro unknown-attribute* [attr-type]
+                         |     |  |     +--ro optional?     boolean
+                         |     |  |     +--ro transitive?   boolean
+                         |     |  |     +--ro partial?      boolean
+                         |     |  |     +--ro extended?     boolean
+                         |     |  |     +--ro attr-type     uint8
+                         |     |  |     +--ro attr-len?     uint16
+                         |     |  |     +--ro attr-value?   binary
+                         |     |  +--ro reject-reason?         union
+                         |     +--ro clear-routes {clear-routes}?
+                         |        +---x clear
+                         |           +---w input
+                         |           |  +---w clear-at?   yang:date-and-time
+                         |           +--ro output
+                         |              +--ro clear-finished-at?   yang:date-and-time
+                         +--ro adj-rib-in-post
+                         |  +--ro routes
+                         |     +--ro route* [prefix path-id]
+                         |        +--ro prefix                 inet:ipv6-prefix
+                         |        +--ro path-id                uint32
+                         |        +--ro attr-index?            -> ../../../../../../../../../attr-sets/attr-set/index
+                         |        +--ro community-index?       -> ../../../../../../../../../communities/community/index
+                         |        +--ro ext-community-index?   -> ../../../../../../../../../ext-communities/ext-community/index
+                         |        +--ro last-modified?         types:timeticks
+                         |        +--ro valid-route?           boolean
+                         |        +--ro invalid-reason?        identityref
+                         |        +--ro best-path?             boolean
+                         |        +--ro unknown-attributes
+                         |        |  +--ro unknown-attribute* [attr-type]
+                         |        |     +--ro optional?     boolean
+                         |        |     +--ro transitive?   boolean
+                         |        |     +--ro partial?      boolean
+                         |        |     +--ro extended?     boolean
+                         |        |     +--ro attr-type     uint8
+                         |        |     +--ro attr-len?     uint16
+                         |        |     +--ro attr-value?   binary
+                         |        +--ro reject-reason?         union
+                         +--ro adj-rib-out-pre
+                         |  +--ro routes
+                         |     +--ro route* [prefix path-id]
+                         |     |  +--ro prefix                 inet:ipv6-prefix
+                         |     |  +--ro path-id                uint32
+                         |     |  +--ro attr-index?            -> ../../../../../../../../../attr-sets/attr-set/index
+                         |     |  +--ro community-index?       -> ../../../../../../../../../communities/community/index
+                         |     |  +--ro ext-community-index?   -> ../../../../../../../../../ext-communities/ext-community/index
+                         |     |  +--ro last-modified?         types:timeticks
+                         |     |  +--ro valid-route?           boolean
+                         |     |  +--ro invalid-reason?        identityref
+                         |     |  +--ro unknown-attributes
+                         |     |  |  +--ro unknown-attribute* [attr-type]
+                         |     |  |     +--ro optional?     boolean
+                         |     |  |     +--ro transitive?   boolean
+                         |     |  |     +--ro partial?      boolean
+                         |     |  |     +--ro extended?     boolean
+                         |     |  |     +--ro attr-type     uint8
+                         |     |  |     +--ro attr-len?     uint16
+                         |     |  |     +--ro attr-value?   binary
+                         |     |  +--ro reject-reason?         union
+                         |     +--ro clear-routes {clear-routes}?
+                         |        +---x clear
+                         |           +---w input
+                         |           |  +---w clear-at?   yang:date-and-time
+                         |           +--ro output
+                         |              +--ro clear-finished-at?   yang:date-and-time
+                         +--ro adj-rib-out-post
+                            +--ro routes
+                               +--ro route* [prefix path-id]
+                               |  +--ro prefix                 inet:ipv6-prefix
+                               |  +--ro path-id                uint32
+                               |  +--ro attr-index?            -> ../../../../../../../../../attr-sets/attr-set/index
+                               |  +--ro community-index?       -> ../../../../../../../../../communities/community/index
+                               |  +--ro ext-community-index?   -> ../../../../../../../../../ext-communities/ext-community/index
+                               |  +--ro last-modified?         types:timeticks
+                               |  +--ro valid-route?           boolean
+                               |  +--ro invalid-reason?        identityref
+                               |  +--ro unknown-attributes
+                               |  |  +--ro unknown-attribute* [attr-type]
+                               |  |     +--ro optional?     boolean
+                               |  |     +--ro transitive?   boolean
+                               |  |     +--ro partial?      boolean
+                               |  |     +--ro extended?     boolean
+                               |  |     +--ro attr-type     uint8
+                               |  |     +--ro attr-len?     uint16
+                               |  |     +--ro attr-value?   binary
+                               |  +--ro reject-reason?         union
+                               +--ro clear-routes {clear-routes}?
+                                  +---x clear
+                                     +---w input
+                                     |  +---w clear-at?   yang:date-and-time
+                                     +--ro output
+                                        +--ro clear-finished-at?   yang:date-and-time
