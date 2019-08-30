@@ -49,6 +49,11 @@
       <artifactId>bgp-api</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.opendaylight.unimgr</groupId>
+      <artifactId>evpn</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
