@@ -7,6 +7,10 @@
  */
 package org.opendaylight.unimgr.mef.nrp.impl;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.MoreExecutors;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -15,28 +19,27 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.opendaylight.controller.md.sal.binding.api.DataBroker;
-import org.opendaylight.controller.md.sal.binding.api.DataObjectModification;
-import org.opendaylight.controller.md.sal.binding.api.DataTreeChangeListener;
-import org.opendaylight.controller.md.sal.binding.api.DataTreeIdentifier;
-import org.opendaylight.controller.md.sal.binding.api.DataTreeModification;
-import org.opendaylight.controller.md.sal.binding.api.ReadWriteTransaction;
-import org.opendaylight.controller.md.sal.common.api.data.LogicalDatastoreType;
+import org.opendaylight.mdsal.binding.api.DataBroker;
+import org.opendaylight.mdsal.binding.api.DataObjectModification;
+import org.opendaylight.mdsal.binding.api.DataTreeChangeListener;
+import org.opendaylight.mdsal.binding.api.DataTreeIdentifier;
+import org.opendaylight.mdsal.binding.api.DataTreeModification;
+import org.opendaylight.mdsal.binding.api.ReadWriteTransaction;
+import org.opendaylight.mdsal.common.api.CommitInfo;
+import org.opendaylight.mdsal.common.api.LogicalDatastoreType;
 import org.opendaylight.unimgr.mef.nrp.api.TapiConstants;
 import org.opendaylight.unimgr.mef.nrp.common.NrpDao;
-import org.opendaylight.yang.gen.v1.urn.mef.yang.tapi.common.rev170712.Context;
-import org.opendaylight.yang.gen.v1.urn.mef.yang.tapi.common.rev170712.Uuid;
-import org.opendaylight.yang.gen.v1.urn.mef.yang.tapi.topology.rev170712.Context1;
-import org.opendaylight.yang.gen.v1.urn.mef.yang.tapi.topology.rev170712.node.OwnedNodeEdgePoint;
-import org.opendaylight.yang.gen.v1.urn.mef.yang.tapi.topology.rev170712.topology.context.Topology;
-import org.opendaylight.yang.gen.v1.urn.mef.yang.tapi.topology.rev170712.topology.context.TopologyKey;
+import org.opendaylight.yang.gen.v1.urn.onf.otcc.yang.tapi.common.rev180307.Context;
+import org.opendaylight.yang.gen.v1.urn.onf.otcc.yang.tapi.common.rev180307.Uuid;
+import org.opendaylight.yang.gen.v1.urn.onf.otcc.yang.tapi.topology.rev180307.Context1;
+import org.opendaylight.yang.gen.v1.urn.onf.otcc.yang.tapi.topology.rev180307.node.OwnedNodeEdgePoint;
+import org.opendaylight.yang.gen.v1.urn.onf.otcc.yang.tapi.topology.rev180307.topology.context.Topology;
+import org.opendaylight.yang.gen.v1.urn.onf.otcc.yang.tapi.topology.rev180307.topology.context.TopologyKey;
 import org.opendaylight.yangtools.concepts.ListenerRegistration;
 import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
 
 /**
  * TopologyDataHandler listens to presto system topology and propagate significant changes to presto system topology.
@@ -45,7 +48,7 @@ import com.google.common.util.concurrent.Futures;
  */
 public class AbstractNodeHandler implements DataTreeChangeListener<Topology> {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractNodeHandler.class);
-    private static final InstanceIdentifier NRP_TOPOLOGY_SYSTEM_IID = InstanceIdentifier
+    private static final InstanceIdentifier<Topology> NRP_TOPOLOGY_SYSTEM_IID = InstanceIdentifier
             .create(Context.class)
             .augmentation(Context1.class)
             .child(Topology.class, new TopologyKey(new Uuid(TapiConstants.PRESTO_SYSTEM_TOPO)));
@@ -59,23 +62,30 @@ public class AbstractNodeHandler implements DataTreeChangeListener<Topology> {
     }
 
     public void init() {
-        registration = dataBroker.registerDataTreeChangeListener(new DataTreeIdentifier<>(LogicalDatastoreType.OPERATIONAL, NRP_TOPOLOGY_SYSTEM_IID), this);
+        registration = dataBroker
+                .registerDataTreeChangeListener(
+                        DataTreeIdentifier.create(LogicalDatastoreType.OPERATIONAL, NRP_TOPOLOGY_SYSTEM_IID), this);
+
+        LOG.debug("AbstractNodeHandler registered: {}", registration);
     }
 
     public void close() {
         if (registration != null) {
             registration.close();
+            LOG.debug("AbstractNodeHandler closed");
         }
     }
 
     @Override
     public void onDataTreeChanged(@Nonnull Collection<DataTreeModification<Topology>> collection) {
 
+
         List<OwnedNodeEdgePoint> toUpdateNeps =
                 collection.stream()
                         .map(DataTreeModification::getRootNode)
                         .flatMap(topo -> topo.getModifiedChildren().stream())
                         .flatMap(node -> node.getModifiedChildren().stream())
+                        .filter(this::isNep)
                         .filter(this::checkIfUpdated)
                         .map(nep -> (OwnedNodeEdgePoint) nep.getDataAfter())
                         .collect(Collectors.toList());
@@ -85,6 +95,7 @@ public class AbstractNodeHandler implements DataTreeChangeListener<Topology> {
                 .map(DataTreeModification::getRootNode)
                 .flatMap(topo -> topo.getModifiedChildren().stream())
                 .flatMap(node -> node.getModifiedChildren().stream())
+                .filter(this::isNep)
                 .filter(this::checkIfDeleted)
                 .map(nep -> (OwnedNodeEdgePoint) nep.getDataBefore())
                 .collect(Collectors.toList());
@@ -98,37 +109,41 @@ public class AbstractNodeHandler implements DataTreeChangeListener<Topology> {
         toDeleteNeps
                 .forEach(dao::deleteAbstractNep);
 
-        Futures.addCallback(topoTx.submit(), new FutureCallback<Void>() {
+        Futures.addCallback(topoTx.commit(), new FutureCallback<CommitInfo>() {
 
             @Override
-            public void onSuccess(@Nullable Void result) {
-                LOG.info("Abstract TAPI node upadate successful");
+            public void onSuccess(@Nullable CommitInfo result) {
+                LOG.info("Abstract TAPI node updated successful");
             }
 
             @Override
-            public void onFailure(Throwable t) {
-                LOG.warn("Abstract TAPI node upadate failed due to an error", t);
+            public void onFailure(Throwable throwable) {
+                LOG.warn("Abstract TAPI node update failed due to an error", throwable);
             }
-        });
+        }, MoreExecutors.directExecutor());
     }
 
-    private boolean checkIfDeleted(DataObjectModification dataObjectModificationNep) {
-        OwnedNodeEdgePoint b = (OwnedNodeEdgePoint) dataObjectModificationNep.getDataBefore();
-        OwnedNodeEdgePoint a = (OwnedNodeEdgePoint) dataObjectModificationNep.getDataAfter();
+    private boolean isNep(DataObjectModification<?> dataObjectModificationNep) {
+        return OwnedNodeEdgePoint.class.isAssignableFrom(dataObjectModificationNep.getDataType());
+    }
 
-        if (b != null) {
-            if (a == null) {
+    private boolean checkIfDeleted(DataObjectModification<?> dataObjectModificationNep) {
+        OwnedNodeEdgePoint before = (OwnedNodeEdgePoint) dataObjectModificationNep.getDataBefore();
+        OwnedNodeEdgePoint after = (OwnedNodeEdgePoint) dataObjectModificationNep.getDataAfter();
+
+        if (before != null) {
+            if (after == null) {
                 return true;
             }
-            if (hasSip(b)) {
-                return ! hasSip(a);
+            if (hasSip(before)) {
+                return ! hasSip(after);
             }
         }
 
         return false;
     }
 
-    private boolean checkIfUpdated(DataObjectModification dataObjectModificationNep) {
+    private boolean checkIfUpdated(DataObjectModification<?> dataObjectModificationNep) {
         OwnedNodeEdgePoint before = (OwnedNodeEdgePoint) dataObjectModificationNep.getDataBefore();
         OwnedNodeEdgePoint after = (OwnedNodeEdgePoint) dataObjectModificationNep.getDataAfter();
         if (after == null) {

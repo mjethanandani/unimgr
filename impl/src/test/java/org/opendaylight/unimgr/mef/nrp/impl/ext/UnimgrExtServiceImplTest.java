@@ -12,30 +12,28 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.opendaylight.controller.md.sal.binding.api.ReadWriteTransaction;
-import org.opendaylight.controller.md.sal.common.api.data.ReadFailedException;
+import org.opendaylight.mdsal.binding.api.ReadWriteTransaction;
 import org.opendaylight.unimgr.mef.nrp.common.NrpDao;
 import org.opendaylight.unimgr.mef.nrp.impl.AbstractTestWithTopo;
-import org.opendaylight.yang.gen.v1.urn.mef.yang.mef.types.rev170712.NaturalNumber;
-import org.opendaylight.yang.gen.v1.urn.mef.yang.nrp._interface.rev170712.LayerProtocol1;
-import org.opendaylight.yang.gen.v1.urn.mef.yang.tapi.common.rev170712.ServiceInterfacePoint;
-import org.opendaylight.yang.gen.v1.urn.mef.yang.tapi.common.rev170712.Uuid;
-import org.opendaylight.yang.gen.v1.urn.mef.yang.tapi.common.rev170712.service._interface.point.LayerProtocol;
-import org.opendaylight.yang.gen.v1.urn.mef.yang.tapi.topology.rev170712.node.OwnedNodeEdgePoint;
-import org.opendaylight.yang.gen.v1.urn.odl.unimgr.yang.unimgr.ext.rev700101.AddSipInput;
-import org.opendaylight.yang.gen.v1.urn.odl.unimgr.yang.unimgr.ext.rev700101.AddSipInputBuilder;
-import org.opendaylight.yang.gen.v1.urn.odl.unimgr.yang.unimgr.ext.rev700101.add.sip.input.sip.type.EnniSpecBuilder;
-import org.opendaylight.yang.gen.v1.urn.odl.unimgr.yang.unimgr.ext.rev700101.add.sip.input.sip.type.InniSpecBuilder;
-import org.opendaylight.yang.gen.v1.urn.odl.unimgr.yang.unimgr.ext.rev700101.add.sip.input.sip.type.UniSpecBuilder;
+import org.opendaylight.yang.gen.v1.urn.mef.yang.mef.common.types.rev180321.NaturalNumber;
+import org.opendaylight.yang.gen.v1.urn.mef.yang.nrp._interface.rev180321.ServiceInterfacePoint1;
+import org.opendaylight.yang.gen.v1.urn.odl.unimgr.yang.unimgr.ext.rev170531.AddSipInput;
+import org.opendaylight.yang.gen.v1.urn.odl.unimgr.yang.unimgr.ext.rev170531.AddSipInputBuilder;
+import org.opendaylight.yang.gen.v1.urn.odl.unimgr.yang.unimgr.ext.rev170531.AddSipOutput;
+import org.opendaylight.yang.gen.v1.urn.odl.unimgr.yang.unimgr.ext.rev170531.add.sip.input.sip.type.EnniSpecBuilder;
+import org.opendaylight.yang.gen.v1.urn.odl.unimgr.yang.unimgr.ext.rev170531.add.sip.input.sip.type.InniSpecBuilder;
+import org.opendaylight.yang.gen.v1.urn.odl.unimgr.yang.unimgr.ext.rev170531.add.sip.input.sip.type.UniSpecBuilder;
+import org.opendaylight.yang.gen.v1.urn.onf.otcc.yang.tapi.common.rev180307.Uuid;
+import org.opendaylight.yang.gen.v1.urn.onf.otcc.yang.tapi.common.rev180307.tapi.context.ServiceInterfacePoint;
+import org.opendaylight.yang.gen.v1.urn.onf.otcc.yang.tapi.topology.rev180307.node.OwnedNodeEdgePoint;
 import org.opendaylight.yangtools.yang.common.RpcResult;
 
-/**
- * @author bartosz.michalik@amartus.com
- */
+
 public class UnimgrExtServiceImplTest extends AbstractTestWithTopo {
     private UnimgrExtServiceImpl extService;
 
@@ -50,50 +48,50 @@ public class UnimgrExtServiceImplTest extends AbstractTestWithTopo {
     @Test
     public void addSipNoNep() throws Exception {
         AddSipInput input = input("non-existing-nep");
-        RpcResult<Void> result = extService.addSip(input).get();
+        RpcResult<AddSipOutput> result = extService.addSip(input).get();
         assertFalse(result.isSuccessful());
     }
 
     @Test
-    public void addSip() throws Exception {
+    public void addSip() throws InterruptedException, ExecutionException {
 
         //having
         ReadWriteTransaction tx = dataBroker.newReadWriteTransaction();
-        n(tx, false, nodeId, nodeId + ":1", nodeId + ":2", nodeId + ":3");
-        tx.submit().checkedGet();
+        n(tx, false, new Uuid(nodeId), "d:" + nodeId, nodeId + ":1", nodeId + ":2", nodeId + ":3");
+        tx.commit().get();
 
         AddSipInput input = input(nodeId + ":1", SipType.enni);
-        RpcResult<Void> result = extService.addSip(input).get();
+        RpcResult<AddSipOutput> result = extService.addSip(input).get();
         assertTrue(result.isSuccessful());
         verifySipExists(nodeId + ":1", sip -> {
-            LayerProtocol lp = sip.getLayerProtocol().get(0);
-            LayerProtocol1 lpAug = lp.getAugmentation(LayerProtocol1.class);
+            ServiceInterfacePoint1 lpAug = sip.augmentation(ServiceInterfacePoint1.class);
             assertNotNull(lpAug);
             assertNotNull(lpAug.getNrpCarrierEthEnniNResource());
         });
     }
 
-
-
     @Test
-    public void addSipFailBecauseItAlreadyExists() throws Exception {
+    public void addSipFailBecauseItAlreadyExists()
+            throws InterruptedException, ExecutionException {
 
         //having
         ReadWriteTransaction tx = dataBroker.newReadWriteTransaction();
-        n(tx, true, nodeId, nodeId + ":1", nodeId + ":2", nodeId + ":3");
-        tx.submit().checkedGet();
+        n(tx, true, new Uuid(nodeId), "d:" + nodeId, nodeId + ":1", nodeId + ":2", nodeId + ":3");
+        tx.commit().get();
 
         AddSipInput input = input(nodeId + ":1");
-        RpcResult<Void> result = extService.addSip(input).get();
+        RpcResult<AddSipOutput> result = extService.addSip(input).get();
         assertFalse(result.isSuccessful());
         verifySipExists(nodeId + ":1");
     }
 
-    private void verifySipExists(String nepId, Consumer<ServiceInterfacePoint> verifySip) throws ReadFailedException {
+    private void verifySipExists(String nepId, Consumer<ServiceInterfacePoint> verifySip)
+            throws InterruptedException, ExecutionException {
 
         NrpDao nrpDao = new NrpDao(dataBroker.newReadOnlyTransaction());
         OwnedNodeEdgePoint nep = nrpDao.readNep(nodeId, nepId);
-        boolean hasSip = nep.getMappedServiceInterfacePoint().get(0).getValue().equals("sip:" + nepId);
+        boolean hasSip = nep.getMappedServiceInterfacePoint().get(0).getServiceInterfacePointId().getValue()
+                .equals("sip:" + nepId);
         ServiceInterfacePoint sip = nrpDao.getSip("sip:" + nepId);
         assertTrue(hasSip && sip != null);
         if (verifySip != null) {
@@ -101,8 +99,7 @@ public class UnimgrExtServiceImplTest extends AbstractTestWithTopo {
         }
     }
 
-
-    private void verifySipExists(String nepId) throws ReadFailedException {
+    private void verifySipExists(String nepId) throws InterruptedException, ExecutionException {
         verifySipExists(nepId, null);
     }
 
@@ -126,23 +123,28 @@ public class UnimgrExtServiceImplTest extends AbstractTestWithTopo {
             case uni:
                 sipBuilder.setSipType(
                     new UniSpecBuilder()
-                    .setUniSpec(new org.opendaylight.yang.gen.v1.urn.odl.unimgr.yang.unimgr.ext.rev700101.add.sip.input.sip.type.uni.spec.UniSpecBuilder().build())
+                    .setUniSpec(
+                            new org.opendaylight.yang.gen.v1.urn.odl.unimgr.yang.unimgr.ext.rev170531.add
+                            .sip.input.sip.type.uni.spec.UniSpecBuilder().build())
                     .build());
-            break;
+                break;
             case enni:
                 sipBuilder.setSipType(
                     new EnniSpecBuilder()
                         .setEnniSpec(
-                                new org.opendaylight.yang.gen.v1.urn.odl.unimgr.yang.unimgr.ext.rev700101.add.sip.input.sip.type.enni.spec.EnniSpecBuilder()
+                                new org.opendaylight.yang.gen.v1.urn.odl.unimgr.yang.unimgr.ext.rev170531.add
+                                .sip.input.sip.type.enni.spec.EnniSpecBuilder()
                                         .setMaxFrameSize(new NaturalNumber(new Long(1000)))
                                         .build())
                     .build());
-            break;
+                break;
             case inni:
             default:
                 sipBuilder.setSipType(
                     new InniSpecBuilder()
-                    .setInniSpec(new org.opendaylight.yang.gen.v1.urn.odl.unimgr.yang.unimgr.ext.rev700101.add.sip.input.sip.type.inni.spec.InniSpecBuilder().build())
+                    .setInniSpec(
+                            new org.opendaylight.yang.gen.v1.urn.odl.unimgr.yang.unimgr.ext.rev170531.add
+                            .sip.input.sip.type.inni.spec.InniSpecBuilder().build())
                     .build());
         }
 

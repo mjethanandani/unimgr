@@ -6,19 +6,19 @@ This program and the accompanying materials are made available under the
 terms of the Eclipse Public License v1.0 which accompanies this distribution,
 and is available at http://www.eclipse.org/legal/epl-v10.html INTERNAL
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <parent>
     <groupId>org.opendaylight.odlparent</groupId>
     <artifactId>odlparent-lite</artifactId>
-    <version>2.0.5</version>
+    <version>4.0.10</version>
     <relativePath/>
   </parent>
 
   <groupId>org.opendaylight.unimgr</groupId>
   <artifactId>unimgr-aggregator</artifactId>
-  <version>0.4.0-SNAPSHOT</version>
-  <name>unimgr</name>
+  <version>0.5.0-SNAPSHOT</version>
+  <name>ODL :: unimgr :: ${project.artifactId}</name>
   <packaging>pom</packaging>
   <modelVersion>4.0.0</modelVersion>
   <prerequisites>
@@ -50,24 +50,18 @@ and is available at http://www.eclipse.org/legal/epl-v10.html INTERNAL
       <id>models</id>
       <modules>
         <module>cisco-xrmodels</module>
-        <module>edgeassure-1000</module>
       </modules>
       <activation><activeByDefault>true</activeByDefault></activation>
     </profile>
     <profile>
       <id>main</id>
       <modules>
-        <module>api</module>
         <module>legato-api</module>
-        <module>presto-api</module>
         <module>nrp-api</module>
         <module>impl</module>
-        <module>netvirt</module>
         <module>cisco-xr-driver</module>
         <module>ovs-driver</module>
         <module>template-driver</module>
-        <module>dlux</module>
-        <module>cli</module>
         <module>karaf</module>
         <module>features</module>
         <module>artifacts</module>
@@ -79,7 +73,7 @@ and is available at http://www.eclipse.org/legal/epl-v10.html INTERNAL
       <modules>
         <module>it</module>
       </modules>
-      <activation><activeByDefault>true</activeByDefault></activation>
+      <activation><activeByDefault>false</activeByDefault></activation>
     </profile>
   </profiles>
 

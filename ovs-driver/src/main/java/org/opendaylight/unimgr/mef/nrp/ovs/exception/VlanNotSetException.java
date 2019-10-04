@@ -10,11 +10,13 @@ package org.opendaylight.unimgr.mef.nrp.ovs.exception;
 import org.opendaylight.unimgr.mef.nrp.common.ResourceNotAvailableException;
 
 /**
- * Exception thrown when C-Tag VLAN ID is not set for termination point
+ * Exception thrown when C-Tag VLAN ID is not set for termination point.
  *
  * @author jakub.niezgoda@amartus.com
  */
 public class VlanNotSetException extends ResourceNotAvailableException {
+    private static final long serialVersionUID = -5851962350259552164L;
+
     public VlanNotSetException(String message) {
         super(message);
     }

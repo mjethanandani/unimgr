@@ -10,7 +10,7 @@ package org.opendaylight.unimgr.mef.nrp.impl.decomposer;
 
 import java.util.List;
 
-import org.opendaylight.controller.md.sal.binding.api.DataBroker;
+import org.opendaylight.mdsal.binding.api.DataBroker;
 import org.opendaylight.unimgr.mef.nrp.api.Constraints;
 import org.opendaylight.unimgr.mef.nrp.api.EndPoint;
 import org.opendaylight.unimgr.mef.nrp.api.FailureResult;
@@ -36,9 +36,9 @@ public class BasicDecomposer implements RequestDecomposer {
 
     /**
      * We currently support only one-to-one mapping between nep and sip.
-     * @param endpoints
-     * @param constraint
-     * @return
+     * @param endpoints list of endpoints
+     * @param constraint decomposition constraints
+     * @return decomposed request
      */
     @Override
     public List<Subrequrest> decompose(List<EndPoint> endpoints, Constraints constraint) throws FailureResult {

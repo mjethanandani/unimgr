@@ -6,28 +6,52 @@ This program and the accompanying materials are made available under the
 terms of the Eclipse Public License v1.0 which accompanies this distribution,
 and is available at http://www.eclipse.org/legal/epl-v10.html INTERNAL
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.2 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <parent>
         <groupId>org.opendaylight.mdsal</groupId>
         <artifactId>binding-parent</artifactId>
-        <version>0.12.0-SNAPSHOT</version>
+        <version>3.0.8</version>
         <relativePath/>
     </parent>
 
     <properties>
-        <ovsdb.version>1.6.0-SNAPSHOT</ovsdb.version>
+      <mdsal.version>3.0.8</mdsal.version>
+      <powermock.version>2.0.0-beta.5</powermock.version>
     </properties>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.opendaylight.unimgr</groupId>
     <artifactId>unimgr-impl</artifactId>
-    <version>0.4.0-SNAPSHOT</version>
+    <version>0.5.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
-    <!-- <name> formatting is used by autorelease to parse and notify projects on
+    <!-- <name> formatting is used by autorelse to parse and notify projects on
          build failure. Please do not modify this unless you have a good reason. -->
     <name>ODL :: unimgr :: ${project.artifactId}</name>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.opendaylight.controller</groupId>
+                <artifactId>mdsal-artifacts</artifactId>
+                <version>1.9.1</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.powermock</groupId>
+                <artifactId>powermock-api-mockito2</artifactId>
+                <version>${powermock.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>2.10.0</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <build>
         <plugins>
             <plugin>
@@ -66,54 +90,30 @@ and is available at http://www.eclipse.org/legal/epl-v10.html INTERNAL
         </plugins>
     </build>
 
-    <dependencyManagement>
-      <dependencies>
-        <dependency>
-          <groupId>org.opendaylight.controller</groupId>
-          <artifactId>mdsal-artifacts</artifactId>
-          <version>1.7.0-SNAPSHOT</version>
-          <type>pom</type>
-          <scope>import</scope>
-        </dependency>
-      </dependencies>
-    </dependencyManagement>
-
     <dependencies>
+
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>unimgr-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>unimgr-presto-api</artifactId>
+            <groupId>org.opendaylight.unimgr</groupId>
+            <artifactId>unimgr-nrp-tapi-api</artifactId>
             <version>${project.version}</version>
         </dependency>
 
-        <!--     OVSDB dependency -->
         <dependency>
-            <groupId>org.opendaylight.ovsdb</groupId>
-            <artifactId>southbound-impl</artifactId>
-            <version>${ovsdb.version}</version>
+            <groupId>org.opendaylight.mdsal.model</groupId>
+            <artifactId>ietf-topology</artifactId>
         </dependency>
 
+        <!-- dependencies to use AbstractConcurrentDataBrokerTest -->
         <dependency>
-            <groupId>org.opendaylight.netconf</groupId>
-            <artifactId>netconf-topology</artifactId>
-            <version>1.4.0-SNAPSHOT</version>
-        </dependency>
-
-        <!-- dependencies to use AbstractDataBrokerTest -->
-        <dependency>
-            <groupId>org.opendaylight.controller</groupId>
-            <artifactId>sal-binding-broker-impl</artifactId>
+            <groupId>org.opendaylight.mdsal</groupId>
+            <artifactId>mdsal-binding-dom-adapter</artifactId>
+            <version>${mdsal.version}</version>
+            <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.opendaylight.controller</groupId>
-            <artifactId>sal-binding-broker-impl</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
+            <groupId>org.opendaylight.mdsal</groupId>
+            <artifactId>mdsal-binding-dom-adapter</artifactId>
         </dependency>
 
         <!-- dependecies of decomposer -->
@@ -129,42 +129,40 @@ and is available at http://www.eclipse.org/legal/epl-v10.html INTERNAL
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-core</artifactId>
+            <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-module-junit4</artifactId>
+            <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-mockito</artifactId>
+            <artifactId>powermock-api-mockito2</artifactId>
+            <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-api-support</artifactId>
+            <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-reflect</artifactId>
+            <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.opendaylight.mdsal.model</groupId>
-            <artifactId>ietf-yang-types-20130715</artifactId>
-        </dependency>
+    <dependency>
+        <groupId>org.opendaylight.mdsal.binding.model.ietf</groupId>
+        <artifactId>rfc6991</artifactId>
+    </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
@@ -172,11 +170,6 @@ and is available at http://www.eclipse.org/legal/epl-v10.html INTERNAL
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.opendaylight.unimgr</groupId>
-            <artifactId>unimgr-nrp-tapi-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

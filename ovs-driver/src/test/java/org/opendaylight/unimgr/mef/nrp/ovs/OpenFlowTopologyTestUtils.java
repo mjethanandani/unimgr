@@ -7,9 +7,10 @@
  */
 package org.opendaylight.unimgr.mef.nrp.ovs;
 
-import org.opendaylight.controller.md.sal.binding.api.DataBroker;
-import org.opendaylight.controller.md.sal.common.api.data.LogicalDatastoreType;
-import org.opendaylight.unimgr.utils.MdsalUtils;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.opendaylight.mdsal.binding.api.DataBroker;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.inventory.rev130819.FlowCapableNode;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.inventory.rev130819.FlowCapableNodeBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.inventory.rev130819.FlowCapableNodeConnector;
@@ -21,14 +22,12 @@ import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.types.port.rev130925.P
 import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeConnectorId;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.Nodes;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodesBuilder;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.OpendaylightInventoryData;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.node.NodeConnector;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.node.NodeConnectorBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.node.NodeConnectorKey;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.nodes.Node;
 import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author marek.ryznar@amartus.com
@@ -49,7 +48,7 @@ public class OpenFlowTopologyTestUtils {
         org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeId nodeId =
                 new org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeId(oFName);
         nodeBuilder.setId(nodeId);
-        nodeBuilder.setKey(new org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.nodes.NodeKey(nodeId));
+        nodeBuilder.withKey(new org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.nodes.NodeKey(nodeId));
         nodeBuilder.setNodeConnector(nodeConnectorList);
         nodeBuilder.addAugmentation(FlowCapableNode.class,createFlowCapableNode());
         return nodeBuilder.build();
@@ -60,7 +59,7 @@ public class OpenFlowTopologyTestUtils {
         String ofPortName = ofBridgeName + ":" + portNumber.toString();
         NodeConnectorId nodeConnectorId = new NodeConnectorId(ofPortName);
         nodeConnectorBuilder.setId(nodeConnectorId);
-        nodeConnectorBuilder.setKey(new NodeConnectorKey(nodeConnectorId));
+        nodeConnectorBuilder.withKey(new NodeConnectorKey(nodeConnectorId));
         nodeConnectorBuilder.addAugmentation(FlowCapableNodeConnector.class,createFlowCapableNodeConnector(ovsdbPortName,portNumber));
         return nodeConnectorBuilder.build();
     }

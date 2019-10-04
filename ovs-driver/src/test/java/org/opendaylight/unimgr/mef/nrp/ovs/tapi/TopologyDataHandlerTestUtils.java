@@ -12,18 +12,20 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
-import org.opendaylight.controller.md.sal.binding.api.DataBroker;
-import org.opendaylight.controller.md.sal.binding.api.ReadWriteTransaction;
-import org.opendaylight.controller.md.sal.common.api.data.LogicalDatastoreType;
-import org.opendaylight.controller.md.sal.common.api.data.ReadFailedException;
+import org.opendaylight.mdsal.binding.api.DataBroker;
+import org.opendaylight.mdsal.binding.api.ReadWriteTransaction;
+import org.opendaylight.mdsal.common.api.LogicalDatastoreType;
 import org.opendaylight.unimgr.mef.nrp.impl.NrpInitializer;
 import org.opendaylight.unimgr.mef.nrp.ovs.DataStoreTestUtils;
 import org.opendaylight.unimgr.mef.nrp.ovs.OpenFlowTopologyTestUtils;
 import org.opendaylight.unimgr.mef.nrp.ovs.OvsdbTopologyTestUtils;
-import org.opendaylight.yang.gen.v1.urn.mef.yang.tapi.common.rev170712.Context;
-import org.opendaylight.yang.gen.v1.urn.mef.yang.tapi.common.rev170712.Uuid;
-import org.opendaylight.yang.gen.v1.urn.mef.yang.tapi.topology.rev170712.Context1;
+import org.opendaylight.yang.gen.v1.urn.onf.otcc.yang.tapi.common.rev180307.Context;
+import org.opendaylight.yang.gen.v1.urn.onf.otcc.yang.tapi.common.rev180307.Uuid;
+import org.opendaylight.yang.gen.v1.urn.onf.otcc.yang.tapi.topology.rev180307.Context1;
+import org.opendaylight.yang.gen.v1.urn.onf.otcc.yang.tapi.topology.rev180307.topology.context.Topology;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.inventory.rev130819.FlowCapableNodeConnector;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.inventory.rev130819.FlowCapableNodeConnectorBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.types.port.rev130925.PortNumberUni;
@@ -34,10 +36,10 @@ import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.node.No
 import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.node.NodeConnectorBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.node.NodeConnectorKey;
 import org.opendaylight.yang.gen.v1.urn.tbd.params.xml.ns.yang.network.topology.rev131021.NodeId;
+import org.opendaylight.yang.gen.v1.urn.tbd.params.xml.ns.yang.network.topology.rev131021.network.topology.topology.Node;
 import org.opendaylight.yang.gen.v1.urn.tbd.params.xml.ns.yang.network.topology.rev131021.network.topology.topology.node.TerminationPoint;
 import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
 
-import com.google.common.base.Optional;
 
 /**
  * @author marek.ryznar@amartus.com
@@ -57,7 +59,7 @@ public class TopologyDataHandlerTestUtils {
 
     private final DataBroker dataBroker;
 
-    protected TopologyDataHandlerTestUtils(DataBroker dataBroker) {
+    public TopologyDataHandlerTestUtils(DataBroker dataBroker) {
         this.dataBroker = dataBroker;
     }
 
@@ -75,12 +77,12 @@ public class TopologyDataHandlerTestUtils {
         tps.add(OvsdbTopologyTestUtils.createTerminationPoint(tp3Name,tp3OFport));
 
         org.opendaylight.yang.gen.v1.urn.tbd.params.xml.ns.yang.network.topology.rev131021.network.topology.topology.Node node = OvsdbTopologyTestUtils.createBridge(bridgeName,tps);
-        InstanceIdentifier instanceIdentifier = OvsdbTopologyTestUtils.getNodeInstanceIdentifier(node.getNodeId());
+        InstanceIdentifier<Node> instanceIdentifier = OvsdbTopologyTestUtils.getNodeInstanceIdentifier(node.getNodeId());
         DataStoreTestUtils.write(node,instanceIdentifier,dataBroker);
     }
 
     protected void deleteTestBridge() {
-        InstanceIdentifier instanceIdentifier = OvsdbTopologyTestUtils.getNodeInstanceIdentifier(new NodeId(bridgeName));
+        InstanceIdentifier<?> instanceIdentifier = OvsdbTopologyTestUtils.getNodeInstanceIdentifier(new NodeId(bridgeName));
         DataStoreTestUtils.delete(instanceIdentifier,dataBroker);
     }
 
@@ -118,7 +120,7 @@ public class TopologyDataHandlerTestUtils {
 
         ReadWriteTransaction transaction = dataBroker.newReadWriteTransaction();
         transaction.put(LogicalDatastoreType.OPERATIONAL,nodesIId,nodes);
-        transaction.submit();
+        transaction.commit();
     }
 
     private org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.nodes.Node createOpenFlowNode(String oFName) {
@@ -127,7 +129,7 @@ public class TopologyDataHandlerTestUtils {
         org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeId nodeId =
                 new org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeId(oFName);
         nodeBuilder.setId(nodeId);
-        nodeBuilder.setKey(new org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.nodes.NodeKey(nodeId));
+        nodeBuilder.withKey(new org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.nodes.NodeKey(nodeId));
         List<NodeConnector> nodeConnectorList = new ArrayList<>();
         nodeConnectorList.add(createNodeConnector(oFName,tp1OFport,tp1Name));
         nodeConnectorList.add(createNodeConnector(oFName,tp2OFport,tp2Name));
@@ -141,7 +143,7 @@ public class TopologyDataHandlerTestUtils {
         String ofPortName = ofBridgeName + ":" + portNumber.toString();
         NodeConnectorId nodeConnectorId = new NodeConnectorId(ofPortName);
         nodeConnectorBuilder.setId(nodeConnectorId);
-        nodeConnectorBuilder.setKey(new NodeConnectorKey(nodeConnectorId));
+        nodeConnectorBuilder.withKey(new NodeConnectorKey(nodeConnectorId));
         nodeConnectorBuilder.addAugmentation(FlowCapableNodeConnector.class,createFlowCapableNodeConnector(ovsdbPortName,portNumber));
         return nodeConnectorBuilder.build();
     }
@@ -153,7 +155,7 @@ public class TopologyDataHandlerTestUtils {
         return flowCapableNodeConnectorBuilder.build();
     }
 
-    protected void createPrestoSystemTopology() {
+    public void createPrestoSystemTopology() {
         NrpInitializer nrpInitializer = new NrpInitializer(dataBroker);
         try {
             nrpInitializer.init();
@@ -162,35 +164,35 @@ public class TopologyDataHandlerTestUtils {
         }
     }
 
-    protected org.opendaylight.yang.gen.v1.urn.mef.yang.tapi.topology.rev170712.topology.Node readOvsNode() {
+    protected org.opendaylight.yang.gen.v1.urn.onf.otcc.yang.tapi.topology.rev180307.topology.Node readOvsNode() {
         return DataStoreTestUtils.read(getNodeIid(),dataBroker);
     }
 
-    protected List<org.opendaylight.yang.gen.v1.urn.mef.yang.tapi.common.rev170712.context.attrs.ServiceInterfacePoint> readSips() {
+    protected List<org.opendaylight.yang.gen.v1.urn.onf.otcc.yang.tapi.common.rev180307.tapi.context.ServiceInterfacePoint> readSips() {
         ReadWriteTransaction readWriteTransaction = dataBroker.newReadWriteTransaction();
         try {
-            Optional<Context> opt = readWriteTransaction.read(LogicalDatastoreType.OPERATIONAL, InstanceIdentifier.create(Context.class)).checkedGet();
+            Optional<Context> opt = readWriteTransaction.read(LogicalDatastoreType.OPERATIONAL, InstanceIdentifier.create(Context.class)).get();
             if (opt.isPresent()) {
                 return opt.get().getServiceInterfacePoint();
             } else {
                 fail("There are no sips.");
             }
-        } catch (ReadFailedException e) {
+        } catch (InterruptedException | ExecutionException e) {
             fail(e.getMessage());
         }
         return null;
     }
 
-    private static InstanceIdentifier getNodeIid() {
+    private static InstanceIdentifier<org.opendaylight.yang.gen.v1.urn.onf.otcc.yang.tapi.topology.rev180307.topology.Node> getNodeIid() {
         return getTopoIid()
-                .child(org.opendaylight.yang.gen.v1.urn.mef.yang.tapi.topology.rev170712.topology.Node.class,
-                        new org.opendaylight.yang.gen.v1.urn.mef.yang.tapi.topology.rev170712.topology.NodeKey(new Uuid(ovsNodeId)));
+                .child(org.opendaylight.yang.gen.v1.urn.onf.otcc.yang.tapi.topology.rev180307.topology.Node.class,
+                        new org.opendaylight.yang.gen.v1.urn.onf.otcc.yang.tapi.topology.rev180307.topology.NodeKey(new Uuid(ovsNodeId)));
     }
 
-    private static InstanceIdentifier getTopoIid() {
+    private static InstanceIdentifier<Topology> getTopoIid() {
         return InstanceIdentifier.create(Context.class)
                 .augmentation(Context1.class)
-                .child(org.opendaylight.yang.gen.v1.urn.mef.yang.tapi.topology.rev170712.topology.context.Topology.class,
-                        new org.opendaylight.yang.gen.v1.urn.mef.yang.tapi.topology.rev170712.topology.context.TopologyKey(new Uuid(prestoNrpTopoId)));
+                .child(org.opendaylight.yang.gen.v1.urn.onf.otcc.yang.tapi.topology.rev180307.topology.context.Topology.class,
+                        new org.opendaylight.yang.gen.v1.urn.onf.otcc.yang.tapi.topology.rev180307.topology.context.TopologyKey(new Uuid(prestoNrpTopoId)));
     }
 }

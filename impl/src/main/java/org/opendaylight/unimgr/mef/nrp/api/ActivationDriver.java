@@ -8,10 +8,10 @@
 package org.opendaylight.unimgr.mef.nrp.api;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
-import org.opendaylight.controller.md.sal.common.api.data.TransactionCommitFailedException;
 import org.opendaylight.unimgr.mef.nrp.common.ResourceActivatorException;
-import org.opendaylight.yang.gen.v1.urn.mef.yang.nrp._interface.rev170712.NrpConnectivityServiceAttrs;
+import org.opendaylight.yang.gen.v1.urn.mef.yang.nrp._interface.rev180321.NrpConnectivityServiceAttrs;
 
 /**
  * Interface of a driver that maps NRP concepts to the configuration of underlying infrastructure.
@@ -47,22 +47,35 @@ public interface ActivationDriver {
 
     /**
      * Performs the activation action.
-     * @throws TransactionCommitFailedException
-     * @throws ResourceActivatorException
+     * @throws ResourceActivatorException activation problem
+     * @throws ExecutionException transaction execution failed
+     * @throws InterruptedException transaction was interrupted
      */
-    void activate() throws TransactionCommitFailedException, ResourceActivatorException;
+    void activate() throws ResourceActivatorException, InterruptedException, ExecutionException;
+
+    /**
+     * Performs the update action.
+     * @throws ResourceActivatorException activation problem
+     * @throws ExecutionException transaction execution failed
+     * @throws InterruptedException transaction was interrupted
+     */
+    default void update() throws ResourceActivatorException, InterruptedException, ExecutionException {
+        deactivate();
+        activate();
+    }
 
     /**
      * Performs the deactivation action.
-     * @throws TransactionCommitFailedException
-     * @throws ResourceActivatorException
+     * @throws ResourceActivatorException activation problem
+     * @throws ExecutionException transaction execution failed
+     * @throws InterruptedException transaction was interrupted
      */
-    void deactivate() throws TransactionCommitFailedException, ResourceActivatorException;
+    void deactivate() throws ResourceActivatorException, InterruptedException, ExecutionException;
 
 
     /**
      * Influences the order in which drivers are called within the transaction.
-     * @return int priority of this driver when resoving ambiguity
+     * @return int priority of this driver when resolving ambiguity
      */
     int priority();
 }

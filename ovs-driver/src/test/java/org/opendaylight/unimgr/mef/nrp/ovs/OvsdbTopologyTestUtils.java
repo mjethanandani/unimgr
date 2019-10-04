@@ -7,9 +7,17 @@
  */
 package org.opendaylight.unimgr.mef.nrp.ovs;
 
-import org.opendaylight.controller.md.sal.binding.api.DataBroker;
+import java.util.List;
+
+import org.opendaylight.mdsal.binding.api.DataBroker;
 import org.opendaylight.yang.gen.v1.urn.ietf.params.xml.ns.yang.ietf.inet.types.rev130715.Uri;
-import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.ovsdb.rev150105.*;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.ovsdb.rev150105.OvsdbBridgeAugmentation;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.ovsdb.rev150105.OvsdbBridgeAugmentationBuilder;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.ovsdb.rev150105.OvsdbBridgeName;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.ovsdb.rev150105.OvsdbNodeAugmentation;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.ovsdb.rev150105.OvsdbNodeAugmentationBuilder;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.ovsdb.rev150105.OvsdbTerminationPointAugmentation;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.ovsdb.rev150105.OvsdbTerminationPointAugmentationBuilder;
 import org.opendaylight.yang.gen.v1.urn.tbd.params.xml.ns.yang.network.topology.rev131021.NetworkTopology;
 import org.opendaylight.yang.gen.v1.urn.tbd.params.xml.ns.yang.network.topology.rev131021.NodeId;
 import org.opendaylight.yang.gen.v1.urn.tbd.params.xml.ns.yang.network.topology.rev131021.TopologyId;
@@ -25,14 +33,12 @@ import org.opendaylight.yang.gen.v1.urn.tbd.params.xml.ns.yang.network.topology.
 import org.opendaylight.yang.gen.v1.urn.tbd.params.xml.ns.yang.network.topology.rev131021.network.topology.topology.node.TerminationPointKey;
 import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
 
-import java.util.List;
-
 /**
  * @author marek.ryznar@amartus.com
  */
 public class OvsdbTopologyTestUtils {
     private static final TopologyId ovsdbTopologyId = new TopologyId(new Uri("ovsdb:1"));
-    private static final InstanceIdentifier ovsdbTopology =
+    private static final InstanceIdentifier<Topology> ovsdbTopology =
             InstanceIdentifier
                     .create(NetworkTopology.class)
                     .child(Topology.class, new TopologyKey(ovsdbTopologyId));
@@ -48,7 +54,7 @@ public class OvsdbTopologyTestUtils {
     }
 
     public static void writeBridge(Node node, DataBroker dataBroker) {
-        InstanceIdentifier bridgeIid = getNodeInstanceIdentifier(node.getNodeId());
+        InstanceIdentifier<Node> bridgeIid = getNodeInstanceIdentifier(node.getNodeId());
         DataStoreTestUtils.write(node,bridgeIid,dataBroker);
     }
 
@@ -57,10 +63,11 @@ public class OvsdbTopologyTestUtils {
         nodeBuilder.setNodeId(new NodeId(nodeId));
         nodeBuilder.setTerminationPoint(tps);
         nodeBuilder.addAugmentation(OvsdbBridgeAugmentation.class,createOvsdbBridgeAugmentation(nodeId));
+        nodeBuilder.addAugmentation(OvsdbNodeAugmentation.class, new OvsdbNodeAugmentationBuilder().build());
         return nodeBuilder.build();
     }
 
-    public static InstanceIdentifier getNodeInstanceIdentifier(NodeId nodeId) {
+    public static InstanceIdentifier<Node> getNodeInstanceIdentifier(NodeId nodeId) {
         return InstanceIdentifier
                 .builder(NetworkTopology.class)
                 .child(Topology.class,
@@ -70,7 +77,7 @@ public class OvsdbTopologyTestUtils {
                 .build();
     }
 
-    public static InstanceIdentifier getPortInstanceIdentifier(String nodeName, String portName) {
+    public static InstanceIdentifier<TerminationPoint> getPortInstanceIdentifier(String nodeName, String portName) {
         return getNodeInstanceIdentifier(new NodeId(nodeName))
                 .child(TerminationPoint.class,
                         new TerminationPointKey(new TpId(portName)));
@@ -85,7 +92,7 @@ public class OvsdbTopologyTestUtils {
     public static TerminationPoint createTerminationPoint(String tpId, Long ofName) {
         TerminationPointBuilder terminationPointBuilder = new TerminationPointBuilder();
         terminationPointBuilder.setTpId(new TpId(tpId));
-        terminationPointBuilder.setKey(new TerminationPointKey(new TpId(tpId)));
+        terminationPointBuilder.withKey(new TerminationPointKey(new TpId(tpId)));
         terminationPointBuilder.addAugmentation(OvsdbTerminationPointAugmentation.class, createOvsdbTerminationPointAugmentation(ofName));
         TerminationPoint terminationPoint = terminationPointBuilder.build();
         return terminationPoint;

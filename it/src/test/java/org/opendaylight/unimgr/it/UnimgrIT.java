@@ -65,7 +65,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
-import com.google.common.util.concurrent.CheckedFuture;
+import com.google.common.util.concurrent.FluentFuture;
 
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerClass.class)
@@ -90,6 +90,16 @@ public class UnimgrIT extends AbstractMdsalTestBase {
         Thread.sleep(3000);
         dataBroker =  getSession().getSALService(DataBroker.class);
         Assert.assertNotNull("db should not be null", dataBroker);
+    }
+
+    @Override
+    public String getModuleName() {
+        return "unimgr";
+    }
+
+    @Override
+    public String getInstanceName() {
+        return "unimgr-default";
     }
 
     @Override
@@ -232,7 +242,7 @@ public class UnimgrIT extends AbstractMdsalTestBase {
 
     private void writeUNI(InstanceIdentifier<Node> uniNodeIid, Node nodeData, WriteTransaction transaction) throws TransactionCommitFailedException {
         transaction.put(LogicalDatastoreType.CONFIGURATION, uniNodeIid, nodeData);
-        CheckedFuture<Void, TransactionCommitFailedException> future = transaction.submit();
+        FluentFuture<Void, TransactionCommitFailedException> future = transaction.submit();
         future.checkedGet();
     }
 
@@ -243,7 +253,7 @@ public class UnimgrIT extends AbstractMdsalTestBase {
         if (evcLinkIid != null) {
             WriteTransaction transaction = dataBroker.newWriteOnlyTransaction();
             transaction.delete(LogicalDatastoreType.CONFIGURATION, evcLinkIid);
-            CheckedFuture<Void, TransactionCommitFailedException> future = transaction.submit();
+            FluentFuture<Void, TransactionCommitFailedException> future = transaction.submit();
             try {
                 future.checkedGet();
             } catch (TransactionCommitFailedException e) {
@@ -305,7 +315,7 @@ public class UnimgrIT extends AbstractMdsalTestBase {
                         .build();
             WriteTransaction transaction = dataBroker.newWriteOnlyTransaction();
             transaction.put(LogicalDatastoreType.CONFIGURATION, evcLinkIid, linkData);
-            CheckedFuture<Void, TransactionCommitFailedException> future = transaction.submit();
+            FluentFuture<Void, TransactionCommitFailedException> future = transaction.submit();
             future.checkedGet();
             LOG.info("Created and submitted a new Evc link {}", evcLinkId);
         } catch (Exception e) {
@@ -338,7 +348,7 @@ public class UnimgrIT extends AbstractMdsalTestBase {
         D result = null;
         final ReadOnlyTransaction transaction = dataBroker.newReadOnlyTransaction();
         Optional<D> optionalDataObject;
-        CheckedFuture<Optional<D>, ReadFailedException> future = transaction.read(store, path);
+        FluentFuture<Optional<D>, ReadFailedException> future = transaction.read(store, path);
         try {
             optionalDataObject = future.checkedGet();
             if (optionalDataObject.isPresent()) {

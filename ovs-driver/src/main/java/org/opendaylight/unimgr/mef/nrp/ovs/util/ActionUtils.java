@@ -7,14 +7,23 @@
  */
 package org.opendaylight.unimgr.mef.nrp.ovs.util;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import org.opendaylight.yang.gen.v1.urn.ietf.params.xml.ns.yang.ietf.inet.types.rev130715.Uri;
-import org.opendaylight.yang.gen.v1.urn.opendaylight.action.types.rev131112.action.action.*;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.action.types.rev131112.action.action.DropActionCaseBuilder;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.action.types.rev131112.action.action.OutputActionCaseBuilder;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.action.types.rev131112.action.action.PopVlanActionCaseBuilder;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.action.types.rev131112.action.action.PushVlanActionCaseBuilder;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.action.types.rev131112.action.action.SetFieldCaseBuilder;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.action.types.rev131112.action.action.SetQueueActionCaseBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.action.types.rev131112.action.action.drop.action._case.DropActionBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.action.types.rev131112.action.action.output.action._case.OutputActionBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.action.types.rev131112.action.action.pop.vlan.action._case.PopVlanActionBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.action.types.rev131112.action.action.push.vlan.action._case.PushVlanAction;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.action.types.rev131112.action.action.push.vlan.action._case.PushVlanActionBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.action.types.rev131112.action.action.set.field._case.SetFieldBuilder;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.action.types.rev131112.action.action.set.queue.action._case.SetQueueActionBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.action.types.rev131112.action.list.Action;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.action.types.rev131112.action.list.ActionBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.types.rev131026.flow.Instructions;
@@ -27,9 +36,6 @@ import org.opendaylight.yang.gen.v1.urn.opendaylight.l2.types.rev130827.VlanId;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.model.match.types.rev131026.match.VlanMatchBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.model.match.types.rev131026.vlan.match.fields.VlanIdBuilder;
 
-import java.util.LinkedList;
-import java.util.List;
-
 /**
  * Utility class providing common operations for Instruction and Action objects.
  *
@@ -40,11 +46,11 @@ class ActionUtils {
     private static final int MAX_LENGTH = 65535;
     private static final int VLAN_TAG_ETHERNET_TYPE = 33024;
 
-    private final static int NUMBER_OF_PORTNAME_PARTS = 3;
-    private final static int INDEX_OF_PORT_NUMBER = 2;
-    private final static String PORTNAME_PARTS_SEPARATOR = ":";
+    private static final int NUMBER_OF_PORTNAME_PARTS = 3;
+    private static final int INDEX_OF_PORT_NUMBER = 2;
+    private static final String PORTNAME_PARTS_SEPARATOR = ":";
 
-    private final static String INVALID_PORT_NAME_FORMAT_ERROR_MESSAGE = "Port name '%s' has invalid format.";
+    private static final String INVALID_PORT_NAME_FORMAT_ERROR_MESSAGE = "Port name '%s' has invalid format.";
 
     static Instructions createInstructions(List<Action> actions) {
         InstructionsBuilder instructionsBuilder = new InstructionsBuilder();
@@ -94,7 +100,7 @@ class ActionUtils {
 
 
     static Action createOutputAction(String port, int order) {
-        ActionBuilder actionBuilder = new ActionBuilder();
+        final ActionBuilder actionBuilder = new ActionBuilder();
 
         OutputActionCaseBuilder outputActionCaseBuilder = new OutputActionCaseBuilder();
         OutputActionBuilder outputActionBuilder = new OutputActionBuilder();
@@ -109,7 +115,7 @@ class ActionUtils {
 
 
     static Action createSetVlanIdAction(int vlan, int order) {
-        ActionBuilder actionBuilder = new ActionBuilder();
+        final ActionBuilder actionBuilder = new ActionBuilder();
 
         VlanId vlanId = new VlanId(vlan);
 
@@ -161,5 +167,19 @@ class ActionUtils {
         } else {
             throw new IllegalArgumentException(String.format(INVALID_PORT_NAME_FORMAT_ERROR_MESSAGE, portName));
         }
+    }
+
+    static Action createSetQueueNumberAction(long queueNumber, int order) {
+        ActionBuilder actionBuilder = new ActionBuilder();
+
+        SetQueueActionBuilder setQueueActionBuilder = new SetQueueActionBuilder();
+        setQueueActionBuilder.setQueueId(queueNumber);
+
+        SetQueueActionCaseBuilder setQueueActionCaseBuilder = new SetQueueActionCaseBuilder();
+        setQueueActionCaseBuilder.setSetQueueAction(setQueueActionBuilder.build());
+
+        actionBuilder.setAction(setQueueActionCaseBuilder.build());
+        actionBuilder.setOrder(order);
+        return actionBuilder.build();
     }
 }
