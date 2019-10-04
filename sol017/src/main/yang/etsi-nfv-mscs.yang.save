@@ -1,0 +1,229 @@
+module etsi-nfv-mscs {
+  yang-version 1.1;
+  namespace "urn:etsi:nfv:yang:etsi-nfv-mscs";
+  prefix mscs;
+
+  organization
+    "European Telecommunications Standards Institute (ETSI)";
+
+  description
+    "Network Function Virtualization Multi Site Connectivity Service";
+
+  revision 2019-08-29 {
+    description
+      "Initial revision.
+       MSCS according to ETSI GS NFV-IFA 032.";
+  }
+
+  container mscs {
+
+    leaf id {
+      type string;
+      description
+	"Identifier of the MSCS.";
+    }
+
+    leaf name {
+      type string;
+      description
+	"Human readable name of the MSCS.";
+    }
+
+    leaf description {
+      type string;
+      description
+	"Human readable description of the MSCS.";
+    }
+
+    list endpoint {
+      key "id";
+      min-elements 2;
+      
+      leaf id {
+	type string;
+	description
+	  "References a connectivity service endpoint that acts as
+           MSCS endpoint of the MSCS.";
+      }
+
+      leaf directionality {
+	type enumeration {
+	  enum inbound;
+	  enum outbound;
+	  enum both;
+	}
+	mandatory true;
+	description
+	  "Directionality of the data traffic in the context of
+           the terminating MSCS endpoint. Allowed values:
+           ● INBOUND (into the endpoint);
+           ● OUTBOUND (from the endpoint);
+           ● BOTH.";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.3, MscsEndpointData
+           information element";
+      }
+
+      leaf network-addressing {
+	type string;
+	mandatory true;
+	description
+	  "Information about the network addressing configuration
+           applicable in between the MSCS endpoint and the network
+           edge point.";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.3, MscsEndpointData
+           information element";
+      }
+
+      leaf lag {
+	type string;
+	description
+	  "Link aggregation configuration for the link in between
+           the MSCS endpoint and the WAN network edge point.";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.3, MscsEndpointData
+           information element";
+      }
+    }
+
+    list profile {
+      key "id";
+
+      leaf id {
+	type string;
+	description
+	  "Identifier of the MSCS Profile.";
+      }
+
+      leaf bandwidth-in {
+	type uint32;
+	units "Mbps";
+	mandatory true;
+	description
+	  "Incoming bandwidth (in Mbps).";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.4, MscsProfile
+           information element";
+      }
+
+      leaf bandwidth-out {
+	type uint32;
+	units "Mbps";
+	description
+	  "Outgoing bandwidth (in Mbps). If value is not provided,
+           symmetric traffic bandwidth, i.e. same value as
+           bandwidthIn shall be assumed.";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.4, MscsProfile
+           information element";
+      }
+
+      leaf-list qos-metric {
+	type string;
+	description
+	  "Set of QoS related metrics such as cost, delay, delay
+           variation and latency. Time-based values shall be
+           expressed in milliseconds.";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.4, MscsProfile
+           information element";
+      }
+
+      leaf directionality {
+	type enumeration {
+	  enum unidirectional;
+	  enum bidirectional;
+	}
+	mandatory true;
+	description
+	  "Directionality of the data traffic. Allowed values:
+           UNIDIRECTIONAL, BIDIRECTIONAL.";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.4, MscsProfile
+           information element";
+      }
+
+      leaf mtu {
+	type uint32;
+	mandatory true;
+	description
+	  "Maximum transmission unit value determining the
+           largest PDU size that can be transmitted.";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.4, MscsProfile
+           information element";
+      }
+
+      leaf protection-scheme {
+	type enumeration {
+	  enum unprotected;
+	  enum zero-one;
+	  enum one-one;
+	  enum one-plus-one;
+	  enum one-n;
+	  enum m-n;
+	}
+	description
+	  "Describes the resiliency requirements. The value is
+           used to determine the capabilities and number of
+           MSNCs needed to fulfil certain availability. Allowed
+           values: UNPROTECTED, <0:1>, <1:1>, <1+1>, <1:N>,
+           <M:N>";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.4, MscsProfile
+           information element";
+      }
+
+      leaf connectivity-mode {
+	type enumeration {
+	  enum p2p;
+	  enum mp;
+	}
+	mandatory true;
+	description
+	  "The type of connectivity to be enabled. Allowed values:
+           P2P (point-to-point), MP (multipoint).";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.4, MscsProfile
+           information element";
+      }
+
+      leaf num-segment {
+	type uint32;
+	mandatory true;
+	description
+	  "Number of virtual private network segments (to be)
+           enabled.";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.4, MscsProfile
+           information element";
+      }
+
+      leaf-list segment-id {
+	type uint32;
+	description
+	  "Identifiers of the virtual private network segments, e.g.
+           the virtual network identifier (VNI), routing
+           distinguishers (RD), etc.";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.4, MscsProfile
+           information element";
+      }
+    }
+
+    leaf protocol {
+      type string;
+      description
+	"Protocol aspects for particular layer determining
+         the type of MSNCs to be established realizing the
+         MSCS, e.g. l2vpn, l3vpn with specific protocol
+         technologies such as EVPN, VPLS, VPWS,
+         BGP/MPLS IP VPN.
+
+         The attribute allows the specification of identifiers
+         of the virtual private network segments, associated
+         to the particular layer protocol.";
+    }
+  }
+}

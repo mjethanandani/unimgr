@@ -1,0 +1,72 @@
+module etsi-nfv-nslcog {
+  yang-version 1.1;
+  namespace "urn:etsi:nfv:yang:etsi-nfv-nslcog";
+  prefix nslcog;
+
+  organization
+    "European Telecommunications Standards Institute (ETSI)";
+
+  description
+    "RESTful protocols specification for the Or-Or Reference Point";
+
+  revision 2019-10-01 {
+    description
+      "Initial revision.
+       LSM according to ETSI GS NFV-IFA 030.";
+  }
+
+  container nslcog {
+    container grant {
+      presence "Just to make sure it exists.";
+      leaf ns-instance-id {
+        type string;
+        mandatory true;
+        description
+          "Identifier of the NS instance which this grant request
+         relates to.";
+        reference
+          "GS NFV-SOL011, Section 7.6.2.2, Type 
+         GrantNsLifecycleOperationRequest.";
+      }
+
+      leaf nsd-id {
+        type string;
+        mandatory true;
+        description
+          "Identifier of the NSD that defines the NS for which the
+         lifecycle management operation is to be granted.";
+        reference
+          "GS NFV-SOL011, Section 7.6.2.2, Type 
+         GrantNsLifecycleOperationRequest.";
+      }
+
+      leaf lifecycle-operations {
+        type enumeration {
+          enum instantiate-ns;
+          enum create-ns-identifier;
+          enum delete-ns-identifier;
+          enum query-ns;
+        }
+        mandatory true;
+        description
+          "Type of the lifecycle management operation for which the
+         granting is requested.";
+        reference
+          "GS NFV-SOL011, Section 7.6.2.2, Type 
+         GrantNsLifecycleOperationRequest.";
+      }
+
+      list additional-params {
+        key "key";
+
+        leaf key {
+          type string;
+        }
+
+        leaf value {
+          type string;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,760 @@
+module etsi-nfv-mscs {
+  yang-version 1.1;
+  namespace "urn:etsi:nfv:yang:etsi-nfv-mscs";
+  prefix mscs;
+
+  import ietf-yang-types {
+    prefix yang;
+    reference
+      "RFC 6991, Common YANG Data Types.";
+  }
+
+  organization
+    "European Telecommunications Standards Institute (ETSI)";
+
+  description
+    "Network Function Virtualization Multi Site Connectivity Service";
+
+  revision 2019-08-29 {
+    description
+      "Initial revision.
+       MSCS according to ETSI GS NFV-IFA 032.";
+  }
+
+  // Typedefs
+  typedef direction {
+    type enumeration {
+      enum unidirectional;
+      enum bidirectional;
+    }
+  }
+
+  typedef protection {
+    type enumeration {
+      enum unprotected;
+      enum zero-one;
+      enum one-one;
+      enum one-plus-one;
+      enum one-n;
+      enum m-n;
+    }
+  }
+
+  /*
+   * Identities.
+   */
+  identity layer-protocol {
+  }
+  identity ethernet {
+    base layer-protocol;
+  }
+  identity mpls {
+    base layer-protocol;
+  }
+  identity odu2 {
+    base layer-protocol;
+  }
+  identity ipv4 {
+    base layer-protocol;
+  }
+  identity ipv6 {
+    base layer-protocol;
+  }
+  identity pseudo-wire {
+    base layer-protocol;
+  }
+
+  // Module
+  container mscs {
+
+    leaf id {
+      type string;
+      mandatory "true";
+      description
+	"Identifier of the MSCS.";
+    }
+
+    leaf name {
+      type string;
+      description
+	"Human readable name of the MSCS.";
+    }
+
+    leaf description {
+      type string;
+      description
+	"Human readable description of the MSCS.";
+    }
+
+    list endpoint {
+      key "id";
+      min-elements 2;
+      
+      leaf id {
+	type string;
+	description
+	  "References a connectivity service endpoint that acts as
+           MSCS endpoint of the MSCS.";
+      }
+
+      leaf connectivity-service-endpoint-id {
+	type leafref {
+	  path "../../id";
+	}
+	description
+	  "References the connectivity service endpoint that
+           acts as MSCS endpoint for the MSCS.";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.8, MscsEndpointInfo
+           information element";
+      }
+
+      leaf directionality {
+	type enumeration {
+	  enum inbound;
+	  enum outbound;
+	  enum both;
+	}
+	mandatory true;
+	description
+	  "Directionality of the data traffic in the context of
+           the terminating MSCS endpoint. Allowed values:
+           ● INBOUND (into the endpoint);
+           ● OUTBOUND (from the endpoint);
+           ● BOTH.";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.3, MscsEndpointData
+           information element";
+      }
+
+      leaf network-addressing {
+	type string;
+	mandatory true;
+	description
+	  "Information about the network addressing configuration
+           applicable in between the MSCS endpoint and the network
+           edge point.";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.3, MscsEndpointData
+           information element";
+      }
+
+      leaf lag {
+	type string;
+	description
+	  "Link aggregation configuration for the link in between
+           the MSCS endpoint and the WAN network edge point.";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.3, MscsEndpointData
+           information element";
+      }
+    }
+
+    list profile {
+      key "id";
+
+      leaf id {
+	type string;
+	description
+	  "Identifier of the MSCS Profile.";
+      }
+
+      leaf bandwidth-in {
+	type uint32;
+	units "Mbps";
+	mandatory true;
+	description
+	  "Incoming bandwidth (in Mbps).";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.4, MscsProfile
+           information element";
+      }
+
+      leaf bandwidth-out {
+	type uint32;
+	units "Mbps";
+	description
+	  "Outgoing bandwidth (in Mbps). If value is not provided,
+           symmetric traffic bandwidth, i.e. same value as
+           bandwidthIn shall be assumed.";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.4, MscsProfile
+           information element";
+      }
+
+      leaf-list qos-metric {
+	type string;
+	description
+	  "Set of QoS related metrics such as cost, delay, delay
+           variation and latency. Time-based values shall be
+           expressed in milliseconds.";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.4, MscsProfile
+           information element";
+      }
+
+      leaf directionality {
+	type direction;
+	mandatory true;
+	description
+	  "Directionality of the data traffic. Allowed values:
+           UNIDIRECTIONAL, BIDIRECTIONAL.";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.4, MscsProfile
+           information element";
+      }
+
+      leaf mtu {
+	type uint32;
+	mandatory true;
+	description
+	  "Maximum transmission unit value determining the
+           largest PDU size that can be transmitted.";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.4, MscsProfile
+           information element";
+      }
+
+      leaf protection-scheme {
+	type protection;
+	description
+	  "Describes the resiliency requirements. The value is
+           used to determine the capabilities and number of
+           MSNCs needed to fulfil certain availability. Allowed
+           values: UNPROTECTED, <0:1>, <1:1>, <1+1>, <1:N>,
+           <M:N>";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.4, MscsProfile
+           information element";
+      }
+
+      leaf connectivity-mode {
+	type enumeration {
+	  enum p2p;
+	  enum mp;
+	}
+	mandatory true;
+	description
+	  "The type of connectivity to be enabled. Allowed values:
+           P2P (point-to-point), MP (multipoint).";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.4, MscsProfile
+           information element";
+      }
+
+      leaf num-segment {
+	type uint32;
+	mandatory true;
+	description
+	  "Number of virtual private network segments (to be)
+           enabled.";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.4, MscsProfile
+           information element";
+      }
+
+      leaf-list segment-id {
+	type uint32;
+	description
+	  "Identifiers of the virtual private network segments, e.g.
+           the virtual network identifier (VNI), routing
+           distinguishers (RD), etc.";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.4, MscsProfile
+           information element";
+      }
+    }
+
+    leaf protocol {
+      type string;
+      description
+	"Protocol aspects for particular layer determining
+         the type of MSNCs to be established realizing the
+         MSCS, e.g. l2vpn, l3vpn with specific protocol
+         technologies such as EVPN, VPLS, VPWS,
+         BGP/MPLS IP VPN.
+
+         The attribute allows the specification of identifiers
+         of the virtual private network segments, associated
+         to the particular layer protocol.";
+    }
+
+    list network-edge-point-info {
+      key "id";
+
+      leaf id {
+	type string;
+	description
+	  "Identifies the network edge point.";
+	reference
+	  "GS NFV-IFA032, Section 8.3.11.2, NetworkEdgePointInfo
+           information element";
+      }
+
+      leaf layer-protocol {
+	type string;
+	description
+	  "Provides information about the supported protocols
+           supported for particular layers.";
+	reference
+	  "GS NFV-IFA032, Section 8.3.11.2, NetworkEdgePointInfo
+           information element";
+      }
+    }
+
+    list node-info {
+      key "id";
+
+      leaf id {
+	type string;
+	description
+	  "Identifies the network node.";
+	reference
+	  "GS NFV-IFA032, Section 8.3.9.2, NodeInfo information
+           element";
+      }
+
+      leaf-list layer-protocol {
+	type identityref {
+	  base layer-protocol;
+	}
+	min-elements 1;
+	description
+	  "Supported protocols for particular layers.";
+	reference
+	  "GS NFV-IFA032, Section 8.3.9.2, NodeInfo information
+           element";
+      }
+
+      list transfer-capabilities {
+	key "id";
+
+	leaf id {
+	  type string;
+	  description
+	    "Unique string that identifies the type of transfer
+             capabilities.";
+	}
+
+	leaf capability {
+	  type string;
+	  description
+	    "Information about the data transfer
+             capabilities of the network node,
+             e.g. switching, routing capabilities.";
+	  reference
+            "GS NFV-IFA032, Section 8.3.9.2, NodeInfo information
+             element";
+	}
+      }
+
+      leaf network-edge-point-id {
+	type leafref {
+	  path "../../network-edge-point-info/id";
+	}
+	description
+	  "Describes a network edge point of the
+           network which is mapped to a node point
+           (an actual port (or interface)) of this
+           network node.";
+	reference
+          "GS NFV-IFA032, Section 8.3.9.2, NodeInfo information
+           element";
+      }
+    }
+
+    list msnc {
+      key "id";
+
+      leaf id {
+	type string;
+	description
+	  "Identifier of the MSNC.";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.6, Msnc information
+           element";
+      }
+
+      leaf-list endpoint-id {
+	type leafref {
+	  path "../../network-edge-point-info/id";
+	}
+	min-elements 2;
+	description
+	  "The multi-site network edge points across which
+           the MSNC is established.";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.6, Msnc information
+           element";
+      }
+
+      leaf-list path {
+	type leafref {
+	  path "../../node-info/id";
+	}
+	min-elements 1;
+	description
+	  "The path of the MSNC through the network nodes
+           in the underlying network topology.";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.6, Msnc information
+           element";
+      }
+
+      container profile {
+	leaf bandwidth-in {
+	  type uint32;
+	  mandatory "true";
+	  units "Mbps";
+	  description
+	    "Incoming bandwidth (in Mbps).";
+	  reference
+	    "GS NFV-IFA032, Section 8.2.2.7, MsncProfile information
+             element";
+	}
+
+	leaf bandwidth-out {
+	  type uint32;
+	  mandatory "true";
+	  units "Mbps";
+	  description
+	    "Outgoing bandwidth (in Mbps).";
+	  reference
+	    "GS NFV-IFA032, Section 8.2.2.7, MsncProfile information
+             element";
+	}
+
+	list qos-metric {
+	  key "id";
+
+	  leaf id {
+	    type string;
+	    description
+	      "Unique identifier for the qos-metric.";
+	  }
+	  description
+	    "Set of QoS related metrics such as cost, delay,
+             delay variation and latency. Time-based values
+             shall be expressed in milliseconds.";
+	  reference
+	    "GS NFV-IFA032, Section 8.2.2.7, MsncProfile information
+             element";
+	}
+
+	leaf directionality {
+	  type direction;
+	  description
+	    "Directionality of the data traffic on the enabled
+             MSNC. Allowed values: UNIDIRECTIONAL,
+             BIDIRECTIONAL.";
+	  reference
+	    "GS NFV-IFA032, Section 8.2.2.7, MsncProfile information
+             element";
+	}
+
+	leaf mtu {
+	  type uint32;
+	  mandatory "true";
+	  description
+	    "Maximum transmission unit value determining the
+             largest PDU size that can be transmitted.";
+	  reference
+	    "GS NFV-IFA032, Section 8.2.2.7, MsncProfile information
+             element";
+	}
+
+	leaf protection-scheme {
+	  type protection;
+	  description
+	    "Describes the resiliency requirements of the
+             particular MSNC. Allowed values:
+             UNPROTECTED, <0:1>, <1:1>, <1+1>, <1:N>,
+             <M:N>.";
+	  reference
+	    "GS NFV-IFA032, Section 8.2.2.7, MsncProfile information
+             element";
+	}
+
+	description
+	  "Information of the MSNC with connectivity
+           constrains and requirements applicable to the
+           individual MSNC realizing a MSCS.";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.6, Msnc information
+           element";
+      }
+
+      leaf layer-protocol {
+	type string;
+	description
+	  "A structure describing:
+           ● Protocol aspects for particular layer of
+             the established MSNC realizing the
+             MSCS, e.g. l2vpn, l3vpn with specific
+             protocol technologies such as EVPN,
+             VPLS, VPWS, BGP/MPLS IP VPN.
+           ● Identifiers of the virtual private network
+             segments, e.g. the virtual network
+             identifier (VNI), routing distinguishers
+             (RD), etc. associated to the particular
+             layer protocol.";
+	reference
+	  "GS NFV-IFA032, Section 8.2.2.6, Msnc information
+           element";
+      }
+
+      description
+	"The attribute represents the data related to the
+         instantiated MSNC realizing the MSCS. Cardinality
+         can be zero if a MSNC has not been established
+         yet.";
+    }
+
+    leaf reservation-status {
+      type bits {
+	bit created {
+	  position 0;
+	  description
+	    "The MSCS reservation has been created.";
+	}
+	bit in-use {
+	  position 1;
+	  description
+	    "The MSCS reservation is in use.";
+	}
+      }
+      mandatory "true";
+      description
+	"Status of the MSCS reservation, e.g. to indicate if
+         a reservation is being used, if a reservation has
+         been created but not in use yet.";
+      reference
+	"GS NFV-IFA032, Section 8.2.3.2, ReservedMscs information
+         element";
+    }
+
+    leaf start-time {
+      type yang:date-and-time;
+      description
+	"Indicates the time to start the consumption of the
+         MSCS. If the time value is 0, the MSCS is
+         reserved for immediate use.";
+      reference
+	"GS NFV-IFA032, Section 8.2.3.2, ReservedMscs information
+         element";
+    }
+
+    leaf end-time {
+      type yang:date-and-time;
+      description
+	"Indicates the end time of the reservation (when it
+         is expected that the MSCS will no longer be
+         needed) and used by the WIM to schedule the
+         reservation. If not present, the MSCS is reserved
+         for unlimited usage time.";
+      reference
+	"GS NFV-IFA032, Section 8.2.3.2, ReservedMscs information
+         element";
+    }
+
+    leaf expiry-time {
+      type yang:date-and-time;
+      description
+	"Indicates the time the WIM can release the
+         reservation in case no allocation request against
+         this reservation was made.";
+      reference
+	"GS NFV-IFA032, Section 8.2.3.2, ReservedMscs information
+         element";
+    }
+
+    notification change {
+      leaf id {
+	type leafref {
+	  path "../../id";
+	}
+	mandatory "true";
+	description
+	  "Identifier of the MSCS for which the change
+           notification is issued.";
+      }
+
+      leaf profile {
+	type leafref {
+	  path "../../profile/id";
+	}
+	description
+	  "Details of the changes regarding the profile of
+           the MSCS. It shall be present when the
+           notification refers to changes on the profile,
+           and it shall include the data that has been
+           changed.";
+      }
+
+      list affected-components {
+	key "id";
+
+	leaf id {
+	  type leafref {
+	    path "../../../profile/id";
+	  }
+	}
+	
+	leaf change {
+	  type enumeration {
+	    enum add;
+	    enum update;
+	    enum delete;
+	  }
+	  description
+	    "The type of change, such as addition,
+             removal, modification.";
+	}
+
+	choice resource {
+	  case endpoint {
+	    leaf endpoint {
+	      type leafref {
+		path "../../../endpoint/id";
+	      }
+	    }
+	  }
+
+	  case msnc {
+	    leaf msnc {
+	      type leafref {
+		path "../../../msnc/id";
+	      }
+	    }
+	  }
+	  description
+	    "The identification of the resource
+             concerning the change with a reference to the
+             corresponding subcomponents of the MSCS.";
+	}
+
+	leaf data {
+	  type string;
+	  description
+	    "Any additional data about the change if the change
+             concerns to a modification.";
+	}
+	description
+	  "Identification and information about
+           components or sub-objects of the MSCS that
+           were affected in the change. The applicable
+           components of the MSCS shall be MSCS
+           Endpoints and MSNCs.";
+      }
+    }
+
+    notification reservation-change {
+      leaf id {
+	type leafref {
+	  path "../../id";
+	}
+	description
+	  "Identifier of the MSCS reservation for
+           which the change notification is issued.";
+        reference
+          "GS NFV-IFA032, Section 8.2.5.3, 
+           MscsReservationChangeNotification information element";
+      }
+
+      leaf profile {
+	type leafref {
+	  path "../../profile/id";
+	}
+	description
+	  "Details of the changes regarding the
+           profile of the MSCS reservation. It shall
+           be present when the notification refers to
+           changes on the profile, and it shall
+           include the data that has been changed.";
+        reference
+          "GS NFV-IFA032, Section 8.2.5.3, 
+           MscsReservationChangeNotification information element";
+      }
+
+      list affected-components {
+	key "id";
+
+	leaf id {
+	  type leafref {
+	    path "../../../id";
+	  }
+	}
+	
+	leaf change {
+	  type enumeration {
+	    enum add;
+	    enum update;
+	    enum delete;
+	  }
+	  description
+	    "The type of change, such as addition,
+             removal, modification.";
+	}
+
+	choice resource {
+	  case endpoint {
+	    leaf endpoint {
+	      type leafref {
+		path "../../../endpoint/id";
+	      }
+	    }
+	  }
+
+	  case msnc {
+	    leaf msnc {
+	      type leafref {
+		path "../../../msnc/id";
+	      }
+	    }
+	  }
+	  description
+	    "The identification of the resource
+             concerning the change with a reference to the
+             corresponding subcomponents of the MSCS.";
+	}
+
+	leaf data {
+	  type string;
+	  description
+	    "Any additional data about the change if the change
+             concerns to a modification.";
+	}
+	description
+	  "Identification and information about
+           components or sub-objects of the MSCS that
+           were affected in the change. The applicable
+           components of the MSCS shall be MSCS
+           Endpoints and MSNCs.";
+      }
+
+      leaf-list changed-time {
+	type yang:date-and-time;
+	description
+	  "The time (startTime, endTime or
+           expiryTime) that has changed and new
+           value.";
+        reference
+          "GS NFV-IFA032, Section 8.2.5.3, 
+           MscsReservationChangeNotification information element";
+      }
+
+      leaf reservation-status {
+	type leafref {
+	  path "../../reservation-status";
+	}
+	description
+	  "New status of the MSCS reservation,
+           e.g. to indicate when a reservation has
+           started to be used.";
+        reference
+          "GS NFV-IFA032, Section 8.2.5.3, 
+           MscsReservationChangeNotification information element";
+      }
+    }
+  }
+}
