@@ -33,5 +33,6 @@
     <module>odl-unimgr-template-driver</module>
     <module>odl-unimgr-legato-api</module>
     <module>evpn-api</module>
+    <module>bgp-api</module>
   </modules>
 </project>

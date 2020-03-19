@@ -4,19 +4,7 @@
     <name>Blue</name>
     <enabled>true</enabled>
     <description>Blue VRF</description>
-    <vrf-root>
-      <routing xmlns="urn:ietf:params:xml:ns:yang:ietf-routing">
-	<router-id>192.0.2.1</router-id>
-	<control-plane-protocols>
-	  <control-plane-protocol>
-	    <bgp = xmlns=""urn:ietf:params:xml:ns:yang:ietf-bgp">
-	    </bgp>
-	  </control-plane-protocol>
-	</control-plane-protocols>
-      </routing>
-      <interfaces>
-	
-      </interfaces>
-    </vrf-root>
+    <vv-root>
+    </vv-root>
   </network-instance>
 </network-instances>

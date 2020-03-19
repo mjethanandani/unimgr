@@ -2041,7 +2041,7 @@ module mef-legato-services {
                                           "uni-id = " +
                                               "current()/end-point1]/" +
                                         "role = 'leaf') and " +
-                                       "(/mef-services/carrier-etherent/" +
+                                       "(/mef-services/carrier-ethernet/" +
                                          "subscriber-services/evc/" +
                                           "end-points/end-point[" +
                                           "uni-id = " +

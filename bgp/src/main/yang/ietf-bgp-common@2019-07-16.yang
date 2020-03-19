@@ -10,6 +10,9 @@ submodule ietf-bgp-common {
   import ietf-inet-types { 
     prefix inet; 
   }
+  import ietf-routing {
+    prefix rt;
+  }
 
   organization
     "IETF IDR Working Group";
@@ -272,12 +275,12 @@ submodule ietf-bgp-common {
 
     leaf local-address {
       type union {
-        type inet:ip-address;
-        type leafref {
-          path "/rt:routing/rt:control-plane-protocols/" +
+	type inet:ip-address;
+	type leafref {
+	  path "/rt:routing/rt:control-plane-protocols/" +
 	       "rt:control-plane-protocol/bgp:bgp/bgp:interfaces/" +
 	       "bgp:interface/bgp:name";
-        }
+	}
       }
       description
         "Set the local IP (either IPv4 or IPv6) address to use for

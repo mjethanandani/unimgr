@@ -66,6 +66,7 @@ and is available at http://www.eclipse.org/legal/epl-v10.html INTERNAL
         <module>features</module>
         <module>artifacts</module>
 	<module>evpn</module>
+	<module>bgp</module>
       </modules>
       <activation><activeByDefault>true</activeByDefault></activation>
     </profile>
