@@ -54,6 +54,11 @@
       <artifactId>evpn</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.opendaylight.unimgr</groupId>
+      <artifactId>l2vpn</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
